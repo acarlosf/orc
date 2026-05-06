@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SEGMON — Calculadora v5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#f0f2f5;font-size:13px;color:#1a1a2e}
+:root{--blue:#1a3a6b;--blue2:#2563a8;--accent:#e8f0fe;--green:#166534;--border:#d0d7de;--grey:#6b7280;--white:#fff;--red:#b91c1c;}
+header{background:var(--blue);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px #0004}
+header img{height:40px;border-radius:4px;background:#fff;padding:3px 6px}
+header h1{font-size:15px;font-weight:600}
+header .v{font-size:10px;color:#aac4f0;margin-left:auto}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px;max-width:1500px;margin:0 auto}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+#rbar{grid-column:span 2;background:var(--blue);color:#fff;border-radius:8px;padding:12px 18px;
+  display:grid;grid-template-columns:repeat(6,1fr) auto;gap:8px;position:sticky;top:0;z-index:20;box-shadow:0 4px 16px #0004}
+.rb{display:flex;flex-direction:column;gap:2px}
+.rl{font-size:10px;color:#aac4f0;text-transform:uppercase;letter-spacing:.5px}
+.rv{font-size:16px;font-weight:700}
+.rs{font-size:10px;color:#7db8f7}
+.btn-rst{padding:7px 14px;background:#fee2e2;color:var(--red);border:1px solid #fca5a5;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;align-self:center;white-space:nowrap}
+.btn-rst:hover{background:#fecaca}
+.card{background:var(--white);border-radius:8px;box-shadow:0 1px 4px #0001;overflow:hidden;margin-bottom:12px}
+.card:last-child{margin-bottom:0}
+.chdr{background:var(--blue);color:#fff;padding:9px 14px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;cursor:pointer;user-select:none}
+.chdr .chev{margin-left:auto;font-size:10px;transition:transform .2s}
+.chdr.closed .chev{transform:rotate(-90deg)}
+.cbody.hidden{display:none}
+.cfg{background:#f8fafc;border-bottom:1px solid var(--border);padding:10px 14px;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+.cfg label{font-size:10.5px;color:var(--grey);font-weight:500;display:block;margin-bottom:3px}
+.cfg input[type=number]{width:70px;padding:5px 7px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-weight:600;text-align:center}
+.cfg input:focus{outline:none;border-color:var(--blue2)}
+.hbar{background:#f0f4ff;border-bottom:1px solid var(--border);padding:8px 14px;display:flex;gap:20px;align-items:center;font-size:12.5px}
+.htag{background:var(--accent);color:var(--blue2);border-radius:3px;padding:1px 7px;font-size:11px;font-weight:600}
+.htag.hi{background:#fff3cd;color:#856404}
+.infobox{background:#eff6ff;border-left:3px solid var(--blue2);padding:7px 12px;font-size:11px;color:#1e40af;line-height:1.5}
+.cblock{padding:10px 14px;border-bottom:1px solid #f0f0f0;background:#f8fafc}
+.cblock>label{font-size:11px;color:var(--grey);font-weight:500}
+.crow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.crow select,.crow input[type=number]{padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12.5px}
+.crow select{min-width:170px}
+.sublbl{font-size:11px;color:var(--grey);margin-bottom:2px}
+.sub-num{width:65px;text-align:center}
+.item{display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background .1s}
+.item:last-child{border-bottom:none}
+.item:hover{background:#f8f9ff}
+.item.on{background:#f0fdf4}
+.item.on .iname{font-weight:600;color:#14532d}
+.iname{flex:1;font-size:12.5px}
+.itag{font-size:10px;background:#f0f0f0;border-radius:3px;padding:1px 5px;color:#555;white-space:nowrap}
+.qwrap{display:flex;align-items:center;gap:5px}
+.qbtn{width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-size:14px;font-weight:600;color:var(--blue2);display:flex;align-items:center;justify-content:center}
+.qbtn:hover{background:var(--accent)}
+.qinp{width:52px;padding:3px 5px;border:1px solid var(--border);border-radius:4px;text-align:center;font-size:13px;font-weight:600}
+.qinp:focus{outline:none;border-color:var(--blue2)}
+.ival{font-size:11px;color:var(--green);font-weight:600;min-width:54px;text-align:right}
+.stbar{padding:8px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.btn-add{padding:5px 12px;background:var(--blue2);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500}
+.btn-add:hover{background:var(--blue)}
+.stbl{width:100%;border-collapse:collapse;font-size:12px}
+.stbl th{background:#f0f4ff;padding:6px 8px;font-size:11px;font-weight:600;color:var(--grey);text-align:left;border-bottom:1px solid var(--border)}
+.stbl td{padding:5px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.stbl tr:last-child td{border-bottom:none}
+.stbl select,.stbl input[type=number]{padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px}
+.stbl select{min-width:120px}
+.stbl input[type=number]{width:52px;text-align:center}
+.del-btn{padding:2px 8px;background:#fee2e2;color:var(--red);border:1px solid #fca5a5;border-radius:3px;cursor:pointer;font-size:11px}
+.cline{display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background .1s}
+.cline:last-child{border-bottom:none}
+.cline:hover{background:#f8f9ff}
+.cline.on{background:#f0fdf4}
+.cname{flex:1;font-size:12px}
+.cinp{width:72px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;text-align:center;font-size:12px}
+.cinp:focus{outline:none;border-color:var(--blue2)}
+.cunit{font-size:11px;color:var(--grey);width:26px}
+.cval{font-size:11px;color:var(--green);min-width:60px;text-align:right}
+.warn-box{padding:6px 14px;background:#fffbeb;font-size:11px;color:#92400e;border-bottom:1px solid #fef3c7}
+#email-card{grid-column:span 2}
+.etbar{padding:10px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn-gen{padding:7px 16px;background:var(--blue2);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12.5px;font-weight:600}
+.btn-gen:hover{background:var(--blue)}
+.btn-cp{padding:7px 14px;background:#e0e7ff;color:var(--blue2);border:1px solid #c7d2fe;border-radius:5px;cursor:pointer;font-size:12.5px;font-weight:500}
+.btn-cp:hover{background:#c7d2fe}
+#toast{display:none;background:#22c55e;color:#fff;padding:3px 10px;border-radius:4px;font-size:12px}
+#eout{padding:16px 20px;font-family:'Courier New',monospace;font-size:13px;line-height:1.8;background:#1e2433;color:#e2e8f0;min-height:240px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header>
+  <img src="data:image/jpeg;base64,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" alt="SEGMON">
+  <h1>Calculadora de Instalação &amp; Gerador de Email</h1>
+  <span class="v">v5</span>
+</header>
+<div class="layout">
+
+<!-- Result bar -->
+<div id="rbar">
+  <div class="rb"><div class="rl">Execução M.O.</div><div class="rv" id="r-exec" style="color:#fbbf24">0,00 €</div><div class="rs" id="r-hexec">0,0 h</div></div>
+  <div class="rb"><div class="rl">Mont. Equip.</div><div class="rv" id="r-vm" style="color:#fcd34d;font-size:13px">0,00 €</div><div class="rs" id="r-hm">0 h</div></div>
+  <div class="rb"><div class="rl">Instalação Eléc.</div><div class="rv" id="r-vi" style="color:#4ade80;font-size:13px">0,00 €</div><div class="rs" id="r-hi">0 h</div></div>
+  <div class="rb"><div class="rl">Insumos (material)</div><div class="rv" id="r-ins" style="color:#86efac">0,00 €</div><div class="rs">cabo+tubo+calha</div></div>
+  <div class="rb"><div class="rl">Total geral</div><div class="rv" id="r-tot">0,00 €</div></div>
+  <div class="rb"><div class="rl">Dias · horas</div><div class="rv" id="r-dt" style="font-size:13px">—</div><div class="rs">8h/dia · 2 técnicos</div></div>
+  <button class="btn-rst" onclick="resetAll()">↺ Limpar</button>
+</div>
+
+<!-- LEFT -->
+<div>
+
+<div class="card">
+  <div class="cfg">
+    <div><label>€/hora equipa</label><input type="number" id="i-rate" value="65" min="1" step="1" oninput="recalc()"></div>
+    <div><label>Extra (%)</label><input type="number" id="i-extra" value="0" min="0" max="100" step="1" oninput="recalc()"></div>
+  </div>
+  <div class="hbar">
+    <strong style="font-size:12px">Altura:</strong>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="lo" checked onchange="recalc()"><span class="htag">≤ 3 m</span> Normal</label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="hi" onchange="recalc()"><span class="htag hi">&gt; 3 m</span> Alta</label>
+    <span style="font-size:11px;color:var(--grey);margin-left:auto">Afecta: detetores, botoneiras, sirenes, ilum. emerg., sinais 1 face</span>
+  </div>
+  <div class="infobox"><b>Execução</b> = M.O. montagem + M.O. instalação (bases, lig., enfiamento, ensaios) × (1 + extra%) &nbsp;|&nbsp; <b>Insumos</b> = custo material (cabo, tubo, calha)</div>
+</div>
+
+<div class="card" id="card-cent">
+  <div class="chdr" onclick="tog('cent')">🏭 Central de Incêndio <span class="chev">▼</span></div>
+  <div class="cbody" id="body-cent">
+    <div class="cblock">
+      <label>Tipo, dimensão e nº de detetores do sistema</label>
+      <div class="crow">
+        <div class="qwrap">
+          <button class="qbtn" onclick="adj('central',-1)">−</button>
+          <input class="qinp" id="q-central" type="number" value="0" min="0" max="10" oninput="recalc()">
+          <button class="qbtn" onclick="adj('central',1)">+</button>
+        </div>
+        <select id="s-ctipo" onchange="updCLbl();recalc()">
+          <option value="end">Endereçável</option>
+          <option value="conv">Convencional</option>
+        </select>
+        <div><div class="sublbl" id="lbl-csub">Nº Loops</div>
+          <input type="number" id="s-csub" value="1" min="1" max="32" oninput="recalc()" class="sub-num" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12.5px"></div>
+        <div><div class="sublbl">Nº Detetores sistema</div>
+          <input type="number" id="s-cndet" value="0" min="0" oninput="recalc()" style="width:75px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12.5px;text-align:center"></div>
+        <div class="ival" id="v-central">—</div>
+      </div>
+      <div style="font-size:10.5px;color:var(--grey);margin-top:6px">ℹ Fixação da central = <b>nº detetores sistema</b> × 600s · Programação = 1 por central × 60s</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="card-sadi">
+  <div class="chdr" onclick="tog('sadi')">🔥 SADI — Deteção de Incêndio <span class="chev">▼</span></div>
+  <div class="cbody" id="body-sadi"><div id="eq-sadi"></div></div>
+</div>
+
+<div class="card" id="card-saie">
+  <div class="chdr" onclick="tog('saie')">💡 SAIE — Iluminação de Emergência <span class="chev">▼</span></div>
+  <div class="cbody" id="body-saie"><div id="eq-saie"></div></div>
+</div>
+
+<div class="card" id="card-ext">
+  <div class="chdr" onclick="tog('ext')">🧯 Extinção &amp; SPV <span class="chev">▼</span></div>
+  <div class="cbody" id="body-ext"><div id="eq-ext"></div></div>
+</div>
+
+</div><!-- /left -->
+
+<!-- RIGHT -->
+<div>
+
+<div class="card" id="card-sinais">
+  <div class="chdr" onclick="tog('sinais')">🪧 Sinalização — Catálogo Sinalux <span class="chev">▼</span></div>
+  <div class="cbody" id="body-sinais">
+    <div class="stbar">
+      <button class="btn-add" onclick="addSinal()">+ Adicionar Sinal</button>
+      <span style="font-size:11px;color:var(--grey)">Designação → tipo → tamanho → quantidade</span>
+    </div>
+    <table class="stbl">
+      <thead><tr><th>Designação</th><th style="width:68px">Tipo</th><th style="width:88px">Tamanho</th><th style="width:54px">Qtd.</th><th style="width:64px">M.O.</th><th style="width:28px"></th></tr></thead>
+      <tbody id="sb"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" id="card-cabos">
+  <div class="chdr" onclick="tog('cabos')">🔌 Cabos <span class="chev">▼</span></div>
+  <div class="cbody" id="body-cabos"><div id="cl-cabos"></div></div>
+</div>
+
+<div class="card" id="card-vd">
+  <div class="chdr" onclick="tog('vd')">🔧 Tubos VD + Calhas <span class="chev">▼</span></div>
+  <div class="cbody" id="body-vd">
+    <div class="warn-box">⚡ Tubos VD e Calhas ativam o enfiamento de cabos (90s/m sobre total de metros de cabo). Isogris NÃO ativa enfiamento.</div>
+    <div id="cl-vd"></div>
+  </div>
+</div>
+
+<div class="card" id="card-iso">
+  <div class="chdr" onclick="tog('iso')">🌀 Isogris — sem enfiamento <span class="chev">▼</span></div>
+  <div class="cbody" id="body-iso"><div id="cl-iso"></div></div>
+</div>
+
+<div class="card" id="card-out">
+  <div class="chdr" onclick="tog('out')">🔩 Outros Materiais <span class="chev">▼</span></div>
+  <div class="cbody" id="body-out"><div id="cl-out"></div></div>
+</div>
+
+</div><!-- /right -->
+
+<!-- Email -->
+<div class="card" id="email-card">
+  <div class="chdr" style="cursor:default">✉️ Email de Orçamento Interno</div>
+  <div class="etbar">
+    <button class="btn-gen" onclick="genEmail()">⚡ Gerar Email</button>
+    <button class="btn-cp" onclick="cpEmail()">📋 Copiar</button>
+    <span id="toast">Copiado!</span>
+    <span style="font-size:11px;color:var(--grey);margin-left:auto">Texto pronto a colar — sem nomes pessoais</span>
+  </div>
+  <pre id="eout" style="color:#94a3b8;font-style:italic">← Preencha os equipamentos e clique "Gerar Email"</pre>
+</div>
+
+</div><!-- /layout -->
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const MONT={
+  det_incendio:{lo:15,hi:30},botoneira:{lo:15,hi:30},sirene:{lo:15,hi:30},
+  sinalizador:{lo:15,hi:15},det_gas:{lo:15,hi:15},ilum_emerg:{lo:15,hi:30},
+  extintor:{lo:10,hi:10},agulheta:{lo:10,hi:10},mola:{lo:40,hi:40},
+  seletor:{lo:40,hi:40},fecho_pcf:{lo:30,hi:30},barra:{lo:60,hi:60},
+  puxador:{lo:15,hi:15},fita:{lo:1,hi:1},
+  sinal_1face:{lo:3,hi:15},sinal_2faces:{lo:10,hi:20},sinal_excel:{lo:30,hi:30}
+};
+// All times in seconds
+const INST={
+  fixacao_bases:180,    // per equip with base
+  ligacoes:180,         // per equip with lig
+  colocacao_det:60,     // per detector (encaixe na base)
+  fixacao_central:600,  // per DETECTOR of system (planilha r112: qty=nº detetores)
+  lig_central:30,       // per central
+  prog_central:60,      // per central
+  ensaios:120,          // per equipamento
+  enfiamento:90,        // per metro de cabo (when VD or calha present)
+  passagem_vd:450,      // per metro VD/calha
+};
+
+const EQ_SADI=[
+  {id:'det-fumo',   name:'Detetores de Fumo',                      mk:'det_incendio',inst:{base:1,lig:1,det:1,ensaio:1},email:'detetores fumo'},
+  {id:'det-term',   name:'Detetores Térmicos',                     mk:'det_incendio',inst:{base:1,lig:1,det:1,ensaio:1},email:'detetores térmicos'},
+  {id:'det-opter',  name:'Detetores Ótico-Térmicos',               mk:'det_incendio',inst:{base:1,lig:1,det:1,ensaio:1},email:'detetores ótico-térmicos'},
+  {id:'det-gas',    name:'Detetores de Gás / Monóxido',            mk:'det_gas',     inst:{base:1,lig:1,det:0,ensaio:1},email:'detetores gás/monóxido'},
+  {id:'boton',      name:'Botoneiras de Alarme',                   mk:'botoneira',   inst:{base:1,lig:1,det:0,ensaio:1},email:'botões'},
+  {id:'sirene',     name:'Sirenes de Incêndio',                    mk:'sirene',      inst:{base:0,lig:1,det:0,ensaio:1},email:'sirenes incêndio'},
+  {id:'sinalizador',name:'Sinalizadores Incêndio/Monóxido/Gás',   mk:'sinalizador', inst:{base:0,lig:1,det:0,ensaio:1},email:'sinalizadores incêndio/monóxido/gás'},
+  {id:'bloco-acus', name:'Blocos Acústico-Luminosos "Atm. Perigosa"',mk:'sinalizador',inst:{base:0,lig:1,det:0,ensaio:1},email:'blocos acústico-luminosos "Atmosfera Perigosa"'},
+];
+const EQ_SAIE=[
+  {id:'il-lo',name:'Iluminação Emergência (≤3m)',         mk:'ilum_emerg',fhi:0,inst:{base:1,lig:1,ensaio:1},email:'armaduras de iluminação emergência permanente'},
+  {id:'il-hi',name:'Iluminação Emergência (>3m)',         mk:'ilum_emerg',fhi:1,inst:{base:1,lig:1,ensaio:1},email:'armaduras de iluminação emergência permanente (altura)'},
+  {id:'il-np',name:'Iluminação Emergência Não Permanente',mk:'ilum_emerg',fhi:0,inst:{base:1,lig:1,ensaio:1},email:'armaduras de iluminação emergência não permanente'},
+];
+const EQ_EXT=[
+  {id:'ext-afff',  name:'Extintores AFFF 6L',         mk:'extintor', inst:{},       email:'extintores AFFF 6L'},
+  {id:'ext-afff25',name:'Extintores AFFF 25L',        mk:'extintor', inst:{},       email:'extintores AFFF 25L'},
+  {id:'ext-co2-2', name:'Extintores CO2 2kg',         mk:'extintor', inst:{},       email:'extintores CO2 2kg'},
+  {id:'ext-co2-5', name:'Extintores CO2 5kg',         mk:'extintor', inst:{},       email:'extintores CO2 5kg'},
+  {id:'ext-po',    name:'Extintores Pó Químico ABC',  mk:'extintor', inst:{},       email:'extintores pó químico ABC'},
+  {id:'agulheta',  name:'Agulheta 25/45',             mk:'agulheta', inst:{lig:1},  email:'agulheta 25/45'},
+  {id:'mola',      name:'Molas Aéreas',               mk:'mola',     inst:{},       email:null},
+  {id:'seletor',   name:'Seletor de Fecho',           mk:'seletor',  inst:{},       email:null},
+  {id:'fecho-pcf', name:'Fechadura Porta Corta-Fogo', mk:'fecho_pcf',inst:{},       email:null},
+  {id:'barra',     name:'Barra Antipânico',           mk:'barra',    inst:{},       email:null},
+  {id:'puxador',   name:'Puxador',                    mk:'puxador',  inst:{},       email:null},
+  {id:'fita',      name:'Fita Intumescente (metro)',  mk:'fita',     inst:{},       email:null},
+];
+const SINAIS_CAT=[
+  {code:'P0001',label:'Subir Escadas Esquerda',         tipos:['1'],    sizes:['300x150']},
+  {code:'P0002',label:'Subir Escadas Direita',          tipos:['1'],    sizes:['300x150']},
+  {code:'P0004',label:'Descer Escadas Direita',         tipos:['1'],    sizes:['300x150']},
+  {code:'P0005',label:'Descer Escadas Esquerda',        tipos:['1'],    sizes:['300x150']},
+  {code:'P0008',label:'Saída para Esquerda',            tipos:['2','3'],sizes:['300x150','400x200']},
+  {code:'P0009',label:'Saída para Direita',             tipos:['2','3'],sizes:['300x150','400x200']},
+  {code:'P0010',label:'Porta de Saída',                 tipos:['1','3'],sizes:['300x150','400x200']},
+  {code:'P0012',label:'Saída em Frente',                tipos:['2','3'],sizes:['300x150','400x200']},
+  {code:'P0248',label:'Desbloqueio Porta Emergência',   tipos:['1'],    sizes:['300x150']},
+  {code:'P0400',label:'Extintor Portátil',              tipos:['P'],    sizes:['200x200']},
+  {code:'P0401',label:'Extintor Móvel',                 tipos:['P'],    sizes:['200x200']},
+  {code:'P0505',label:'Área c/ Sistema Extinção Fixo',  tipos:['1'],   sizes:['300x150']},
+  {code:'P0585',label:'Ativar Extinção',                tipos:['1'],    sizes:['150x200']},
+  {code:'P0586',label:'Bloquear Extinção',              tipos:['1'],    sizes:['150x200']},
+  {code:'P0787',label:'Central Bombagem Incêndio',      tipos:['1'],    sizes:['300x150']},
+  {code:'P0794',label:'Central de Incêndio',            tipos:['1'],    sizes:['300x150']},
+  {code:'P0952',label:'Boca de Incêndio Carretel',      tipos:['P'],    sizes:['150x150','200x200']},
+  {code:'P0954',label:'Botoneira de Alarme',            tipos:['P'],    sizes:['150x150']},
+];
+const CABOS=[
+  {id:'lih-2x1',   c:0.58,u:'m',eml:'CABO LIH (st) H FE180 PH120 2x1',             sec:'SADI'},
+  {id:'lih-2x15',  c:0.70,u:'m',eml:'CABO LIH (st) H FE180 PH120 2x1,5',           sec:'SADI'},
+  {id:'lih-m-2x15',c:0.96,u:'m',eml:'CABO LIH (st) CH FE180 PH120 2x1,5 c/ Malha', sec:'SADI'},
+  {id:'lih-3x15',  c:1.25,u:'m',eml:'CABO LIH (st) H FE180 PH120 3x1,5',           sec:'SADI'},
+  {id:'lih-4x15',  c:1.55,u:'m',eml:'CABO LIH (st) H FE180 PH120 4x1,5',           sec:'SADI'},
+  {id:'xz1',       c:0.80,u:'m',eml:'CABO XZ1 (zh,frt) - U3G1,5 sem halogéneos Verde',sec:'SAIE'},
+  {id:'fvv2x15',   c:0.56,u:'m',eml:'CABO FVV 2x1,5',                               sec:'SAIE'},
+  {id:'fvv3x15',   c:0.66,u:'m',eml:'CABO FVV 3x1,5',                               sec:'SAIE'},
+  {id:'vv3x15',    c:0.65,u:'m',eml:'CABO VV 3x1,5',                                sec:'SAIE'},
+  {id:'cf2x1',     c:0.40,u:'m',eml:'CABO CF 2x1',                                  sec:'SADI'},
+  {id:'cf2x15',    c:0.65,u:'m',eml:'CABO CF 2x1,5',                                sec:'SADI'},
+  {id:'utp6',      c:0.39,u:'m',eml:'CABO UTP CAT 6',                               sec:'SADI'},
+];
+const TUBOS_VD=[
+  {id:'vd16',      name:'Tubo VD16 + abraçadeiras',           c:0.30,u:'m'},
+  {id:'vd20',      name:'Tubo VD20 + abraçadeiras',           c:0.44,u:'m'},
+  {id:'vd25',      name:'Tubo VD25 + abraçadeiras',           c:0.75,u:'m'},
+  {id:'calha-20',  name:'Calha 20×12,5 EFAPEL c/ acessórios', c:0.64,u:'m'},
+  {id:'calha-20ad',name:'Calha 20×12,5 ADESIVA EFAPEL',       c:0.78,u:'m'},
+  {id:'calha-110', name:'Calha 110×50 EFAPEL s/ halogénios',  c:10.1,u:'m'},
+];
+const ISOGRIS=[
+  {id:'isog16',name:'Tubo ISOGRIS 16 c/guia',c:0.15,u:'m'},
+  {id:'isog20',name:'Tubo ISOGRIS 20 c/guia',c:0.17,u:'m'},
+  {id:'isog25',name:'Tubo ISOGRIS 25 c/guia',c:0.35,u:'m'},
+];
+const OUTROS=[
+  {id:'bisnaga', name:'Bisnaga de cola e veda',c:4.70,u:'un',eml:'bisnaga cola e veda'},
+  {id:'caixderiv',name:'Caixa Derivação IP55',c:1.75,u:'un',eml:null},
+];
+
+// ── Build UI ──────────────────────────────────────────────────────────────────
+function buildEq(cid,items){
+  const ct=document.getElementById(cid);
+  items.forEach(it=>{
+    const m=MONT[it.mk],tag=m.lo===m.hi?`${m.lo} min/un`:`≤3m:${m.lo}/hi:${m.hi} min`;
+    const d=document.createElement('div');
+    d.className='item';d.id='row-'+it.id;
+    d.innerHTML=`<div class="iname">${it.name}</div><div class="itag">${tag}</div>
+      <div class="qwrap"><button class="qbtn" onclick="adj('${it.id}',-1)">−</button>
+      <input class="qinp" id="q-${it.id}" type="number" value="0" min="0" step="1" oninput="sync('${it.id}')">
+      <button class="qbtn" onclick="adj('${it.id}',1)">+</button></div>
+      <div class="ival" id="v-${it.id}">—</div>`;
+    ct.appendChild(d);
+  });
+}
+function buildLine(cid,items){
+  const ct=document.getElementById(cid);
+  items.forEach(it=>{
+    const nm=it.name||it.eml||it.id;
+    const d=document.createElement('div');
+    d.className='cline';d.id='cln-'+it.id;
+    d.innerHTML=`<div class="cname">${nm}</div>
+      <input class="cinp" id="c-${it.id}" type="number" value="0" min="0" step="1" oninput="syncC('${it.id}')">
+      <div class="cunit">${it.u}</div>
+      <div class="cval" id="cv-${it.id}">—</div>`;
+    ct.appendChild(d);
+  });
+}
+buildEq('eq-sadi',EQ_SADI);buildEq('eq-saie',EQ_SAIE);buildEq('eq-ext',EQ_EXT);
+buildLine('cl-cabos',CABOS);buildLine('cl-vd',TUBOS_VD);buildLine('cl-iso',ISOGRIS);buildLine('cl-out',OUTROS);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function tog(id){document.getElementById('body-'+id)?.classList.toggle('hidden');document.querySelector('#card-'+id+' .chdr')?.classList.toggle('closed');}
+function updCLbl(){document.getElementById('lbl-csub').textContent=document.getElementById('s-ctipo').value==='end'?'Nº Loops':'Nº Zonas';}
+function getH(){return document.querySelector('input[name="alt"]:checked')?.value||'lo';}
+function adj(id,d){const el=document.getElementById('q-'+id);if(!el)return;el.value=Math.max(0,(parseFloat(el.value)||0)+d);sync(id);}
+function sync(id){document.getElementById('row-'+id)?.classList.toggle('on',!!(parseFloat(document.getElementById('q-'+id)?.value)||0));recalc();}
+function syncC(id){document.getElementById('cln-'+id)?.classList.toggle('on',!!(parseFloat(document.getElementById('c-'+id)?.value)||0));recalc();}
+
+// ── Sinais ────────────────────────────────────────────────────────────────────
+let snId=0;
+function addSinal(){
+  const rid=++snId;
+  const opts=SINAIS_CAT.map((s,i)=>`<option value="${i}">${s.label} (${s.code})</option>`).join('');
+  const tr=document.createElement('tr');tr.id='sr-'+rid;
+  tr.innerHTML=`<td><select id="ss-l-${rid}" onchange="updSn(${rid})" style="min-width:155px">${opts}</select></td>
+    <td><select id="ss-t-${rid}" onchange="updSnSz(${rid});recalc()" style="width:58px"></select></td>
+    <td><select id="ss-s-${rid}" onchange="recalc()" style="width:80px"></select></td>
+    <td><input type="number" id="ss-q-${rid}" value="1" min="0" step="1" oninput="recalc()"
+      style="width:48px;padding:3px;border:1px solid var(--border);border-radius:3px;text-align:center;font-size:13px"></td>
+    <td id="ss-v-${rid}" style="font-size:11px;color:var(--green);text-align:right">—</td>
+    <td><button class="del-btn" onclick="delSn(${rid})">✕</button></td>`;
+  document.getElementById('sb').appendChild(tr);
+  updSn(rid);recalc();
+}
+function updSn(rid){
+  const s=SINAIS_CAT[parseInt(document.getElementById('ss-l-'+rid).value)];
+  const ts=document.getElementById('ss-t-'+rid);
+  ts.innerHTML=s.tipos.map(t=>`<option value="${t}">t${t}</option>`).join('');
+  updSnSz(rid);recalc();
+}
+function updSnSz(rid){
+  const idx=parseInt(document.getElementById('ss-l-'+rid).value);
+  const s=SINAIS_CAT[idx];
+  document.getElementById('ss-s-'+rid).innerHTML=s.sizes.map(z=>`<option>${z}</option>`).join('');
+  recalc();
+}
+function getSn(rid){
+  const l=document.getElementById('ss-l-'+rid),tp=document.getElementById('ss-t-'+rid),sz=document.getElementById('ss-s-'+rid),q=document.getElementById('ss-q-'+rid);
+  if(!l||!tp)return null;
+  const s=SINAIS_CAT[parseInt(l.value)];
+  return{s,tp:tp.value,sz:sz?.value||'',qty:parseInt(q?.value)||0};
+}
+function delSn(rid){document.getElementById('sr-'+rid)?.remove();recalc();}
+function snMk(tp){return(tp==='2'||tp==='3')?'sinal_2faces':'sinal_1face';}
+
+// ── Compute ────────────────────────────────────────────────────────────────────
+function compute(){
+  const rate=parseFloat(document.getElementById('i-rate').value)||65;
+  const extra=parseFloat(document.getElementById('i-extra').value)||0;
+  const h=getH();
+  const nC=parseInt(document.getElementById('q-central').value)||0;
+  const nDS=parseInt(document.getElementById('s-cndet').value)||0;
+
+  let montSecs=0,instSecs=0,insMat=0,totalCaboM=0,hasVD=false;
+
+  // Central
+  if(nC>0){
+    montSecs+=nC*90*60;                          // 90 min/central → secs
+    instSecs+=nDS*INST.fixacao_central;           // nº detetores × 600s (planilha r112)
+    instSecs+=nC*(INST.lig_central+INST.prog_central); // 30+60 per central
+  }
+
+  // Equipment
+  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT];
+  allEq.forEach(it=>{
+    const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;
+    if(!qty)return;
+    const m=MONT[it.mk],mT=(it.fhi||h==='hi')?m.hi:m.lo;
+    montSecs+=qty*mT*60;
+    if(it.inst.base)   instSecs+=qty*INST.fixacao_bases;
+    if(it.inst.lig)    instSecs+=qty*INST.ligacoes;
+    if(it.inst.det)    instSecs+=qty*INST.colocacao_det;
+    if(it.inst.ensaio) instSecs+=qty*INST.ensaios;
+  });
+
+  // Sinais
+  document.querySelectorAll('#sb tr').forEach(tr=>{
+    const rid=tr.id.replace('sr-','');
+    const r=getSn(rid);if(!r||!r.qty)return;
+    const m=MONT[snMk(r.tp)],mT=h==='hi'?m.hi:m.lo;
+    montSecs+=r.qty*mT*60;
+    instSecs+=r.qty*INST.ensaios; // sinais → ensaios (spec v5)
+  });
+
+  // Cabos
+  CABOS.forEach(it=>{
+    const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
+    if(!qty)return;
+    insMat+=qty*it.c;totalCaboM+=qty;
+  });
+
+  // Tubos VD + Calhas
+  TUBOS_VD.forEach(it=>{
+    const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
+    if(!qty)return;
+    insMat+=qty*it.c;
+    instSecs+=qty*INST.passagem_vd;
+    hasVD=true;
+  });
+
+  // Isogris (sem enfiamento, só material)
+  ISOGRIS.forEach(it=>{
+    const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
+    if(qty)insMat+=qty*it.c;
+  });
+
+  // Outros
+  OUTROS.forEach(it=>{
+    const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
+    if(qty)insMat+=qty*it.c;
+  });
+
+  // Enfiamento: só quando há VD ou calha
+  if(hasVD&&totalCaboM>0) instSecs+=totalCaboM*INST.enfiamento;
+
+  const hMont=montSecs/3600;
+  const hInst=instSecs/3600;
+  const totalH=hMont+hInst;
+  const exec=(totalH*rate)*(1+extra/100);
+  const vMont=(hMont*rate)*(1+extra/100);
+  const vInst=(hInst*rate)*(1+extra/100);
+
+  const dias=Math.floor(totalH/8);
+  const hrem=totalH%8;
+
+  return{hMont,hInst,totalH,exec,vMont,vInst,insMat,dias,hrem,hasVD,totalCaboM};
+}
+
+function recalc(){
+  const r=compute();
+  const rate=parseFloat(document.getElementById('i-rate').value)||65;
+  const h=getH();
+
+  // Update item values
+  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT];
+  allEq.forEach(it=>{
+    const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;
+    const row=document.getElementById('row-'+it.id);
+    const vEl=document.getElementById('v-'+it.id);
+    row?.classList.toggle('on',qty>0);
+    if(vEl)vEl.textContent=qty>0?fmtE(qty*(MONT[it.mk][(it.fhi||h==='hi')?'hi':'lo'])/60*rate):'—';
+  });
+  document.querySelectorAll('#sb tr').forEach(tr=>{
+    const rid=tr.id.replace('sr-','');
+    const sn=getSn(rid);
+    const vEl=document.getElementById('ss-v-'+rid);
+    if(vEl)vEl.textContent=sn&&sn.qty>0?fmtE(sn.qty*(h==='hi'?MONT[snMk(sn.tp)].hi:MONT[snMk(sn.tp)].lo)/60*rate):'—';
+  });
+  [...CABOS,...TUBOS_VD,...ISOGRIS,...OUTROS].forEach(it=>{
+    const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
+    const vEl=document.getElementById('cv-'+it.id);
+    const row=document.getElementById('cln-'+it.id);
+    row?.classList.toggle('on',qty>0);
+    if(vEl)vEl.textContent=qty>0?fmtE(qty*it.c):'—';
+  });
+  const nC=parseInt(document.getElementById('q-central').value)||0;
+  const vC=document.getElementById('v-central');
+  if(vC)vC.textContent=nC>0?fmtE(nC*90/60*rate):'—';
+
+  // Result bar
+  document.getElementById('r-exec').textContent =fmtE(r.exec);
+  document.getElementById('r-hexec').textContent=fmt1(r.totalH)+' h';
+  document.getElementById('r-vm').textContent   =fmtE(r.vMont);
+  document.getElementById('r-hm').textContent   =fmt1(r.hMont)+' h';
+  document.getElementById('r-vi').textContent   =fmtE(r.vInst);
+  document.getElementById('r-hi').textContent   =fmt1(r.hInst)+' h';
+  document.getElementById('r-ins').textContent  =fmtE(r.insMat);
+  document.getElementById('r-tot').textContent  =fmtE(r.exec+r.insMat);
+  const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8*10)/10;
+  const dStr=dias>0?`${dias} dia${dias!==1?'s':''}` : '';
+  const hStr=hrem>0.05?`${fmt1(hrem)} h`:'';
+  document.getElementById('r-dt').textContent=[dStr,hStr].filter(Boolean).join(' e ')||'—';
+
+  // localStorage
+  try{localStorage.setItem('sg5',JSON.stringify(snapshotState()));}catch(e){}
+}
+
+// ── Email ─────────────────────────────────────────────────────────────────────
+function genEmail(){
+  const r=compute();
+  const rate=parseFloat(document.getElementById('i-rate').value)||65;
+  const h=getH();
+  const lines=[];
+
+  // SADI
+  const sadiL=[];
+  const nC=parseInt(document.getElementById('q-central').value)||0;
+  if(nC>0){
+    const tp=document.getElementById('s-ctipo').value;
+    const sub=parseInt(document.getElementById('s-csub').value)||1;
+    const ts=tp==='end'?`Central de Deteção Incêndio Endereçável ${sub} Loop${sub!==1?'s':''}`:`Central de Deteção Incêndio Convencional ${sub} Zona${sub!==1?'s':''}`;
+    sadiL.push(`${pad(nC)} ${ts}`);
+  }
+  EQ_SADI.forEach(it=>{const q=parseInt(document.getElementById('q-'+it.id)?.value)||0;if(q>0)sadiL.push(`${pad(q)} ${it.email}`);});
+  const sadiC=CABOS.filter(c=>c.sec==='SADI').reduce((a,it)=>{const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)a.push(`${it.eml} ----- ${q} m`);return a;},[]);
+  if(sadiL.length||sadiC.length){lines.push('SADI');sadiL.forEach(l=>lines.push(l));sadiC.forEach(l=>lines.push(l));lines.push('');}
+
+  // SAIE
+  const saieL=EQ_SAIE.reduce((a,it)=>{const q=parseInt(document.getElementById('q-'+it.id)?.value)||0;if(q>0)a.push(`${pad(q)} un – ${it.email}`);return a;},[]);
+  const saieC=CABOS.filter(c=>c.sec==='SAIE').reduce((a,it)=>{const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)a.push(`${it.eml} ----- ${q} m`);return a;},[]);
+  if(saieL.length||saieC.length){lines.push('SAIE');saieL.forEach(l=>lines.push(l));saieC.forEach(l=>lines.push(l));lines.push('');}
+
+  // SINAL
+  const snL=[];
+  document.querySelectorAll('#sb tr').forEach(tr=>{
+    const rid=tr.id.replace('sr-','');const sn=getSn(rid);
+    if(!sn||!sn.qty)return;
+    const szC=sn.sz.replace(/x|×/g,'');
+    snL.push(`${pad(sn.qty)} ${sn.s.label.toLowerCase()} t${sn.tp} ${szC} ${sn.s.code}`);
+  });
+  if(snL.length){lines.push('SINAL');snL.forEach(l=>lines.push(l));lines.push('');}
+
+  // EXTINÇÃO
+  const extL=EQ_EXT.reduce((a,it)=>{if(!it.email)return a;const q=parseInt(document.getElementById('q-'+it.id)?.value)||0;if(q>0)a.push(`${pad(q)} ${it.email}`);return a;},[]);
+  if(extL.length){lines.push('EXTINÇÃO');extL.forEach(l=>lines.push(l));lines.push('');}
+
+  // Outros com email
+  OUTROS.forEach(it=>{if(!it.eml)return;const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)lines.push(`${pad(Math.round(q))} ${it.eml}`);});
+
+  if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
+  if(lines.length&&lines[lines.length-1]==='')lines.pop();
+  lines.push('');
+  if(r.vMont>0) lines.push(`Montagem dos Equipamentos --------- ${fmtE(r.vMont)}`);
+  if(r.vInst>0) lines.push(`Instalação Elétrica Montagem e Ligação -------------------------- ${fmtE(r.vInst)}`);
+  if(r.insMat>0)lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtE(r.insMat)}`);
+  const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8);
+  if(dias>0||hrem>0){
+    lines.push('');
+    const dStr=dias>0?`${dias} Dia${dias!==1?'s':''}` : '';
+    const hStr=hrem>0?`${hrem} hora${hrem!==1?'s':''}` : '';
+    lines.push(`${[dStr,hStr].filter(Boolean).join(' e ')}, 2 técnicos.`);
+  }
+  renderEmail(lines,false);
+}
+
+function renderEmail(lines,grey){
+  const out=document.getElementById('eout');
+  out.style.fontStyle=grey?'italic':'normal';out.textContent='';
+  lines.forEach(l=>{
+    const s=document.createElement('span');
+    if(/^(SADI|SAIE|SINAL|EXTINÇÃO)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
+    else if(/^(Montagem|Instalação|Custo Insumos)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
+    else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
+    else if(grey)s.style.cssText='color:#94a3b8';
+    s.textContent=l+'
+';out.appendChild(s);
+  });
+  out.dataset.plain=lines.join('
+');
+}
+
+function cpEmail(){
+  const p=document.getElementById('eout').dataset.plain||'';if(!p)return;
+  navigator.clipboard.writeText(p).then(()=>{
+    const t=document.getElementById('toast');t.style.display='inline-block';
+    setTimeout(()=>t.style.display='none',2000);
+  });
+}
+
+// ── localStorage ──────────────────────────────────────────────────────────────
+function snapshotState(){
+  const s={};
+  document.querySelectorAll('.qinp,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
+  ['q-central','s-ctipo','s-csub','s-cndet','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
+  s.alt=getH();
+  return s;
+}
+function loadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem('sg5')||'{}');
+    Object.entries(s).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});
+    if(s.alt){const el=document.querySelector(`input[name="alt"][value="${s.alt}"]`);if(el)el.checked=true;}
+    updCLbl();
+    document.querySelectorAll('.qinp').forEach(el=>{const id=el.id.replace('q-','');sync(id);});
+    document.querySelectorAll('.cinp').forEach(el=>{const id=el.id.replace('c-','');syncC(id);});
+  }catch(e){}
+}
+
+function resetAll(){
+  localStorage.removeItem('sg5');
+  document.querySelectorAll('.qinp').forEach(i=>i.value=0);
+  document.querySelectorAll('.cinp').forEach(i=>i.value=0);
+  ['q-central','s-cndet','i-extra'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=0;});
+  document.querySelector('input[name="alt"][value="lo"]').checked=true;
+  document.getElementById('sb').innerHTML='';
+  document.querySelectorAll('.item.on,.cline.on').forEach(r=>r.classList.remove('on'));
+  renderEmail(['← Preencha os equipamentos e clique "Gerar Email"'],true);
+  recalc();
+}
+
+function pad(n){return String(n).padStart(2,'0');}
+function fmtE(v){return(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';}
+function fmt1(v){return(v||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1});}
+
+loadState();recalc();
+</script>
+</body>
+</html>
