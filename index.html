@@ -76,6 +76,9 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .cinp:focus{outline:none;border-color:var(--blue2)}
 .cunit{font-size:11px;color:var(--grey);width:26px}
 .cval{font-size:11px;color:var(--green);min-width:60px;text-align:right}
+.pinp{width:62px;padding:3px 6px;border:1px solid #e2c97e;border-radius:4px;text-align:center;font-size:11px;color:#92400e;background:#fffbeb}
+.pinp:focus{outline:none;border-color:#b45309}
+.punit{font-size:10px;color:#b45309;width:20px}
 .warn-box{padding:6px 14px;background:#fffbeb;font-size:11px;color:#92400e;border-bottom:1px solid #fef3c7}
 #email-card{grid-column:span 2}
 .etbar{padding:10px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -366,6 +369,8 @@ function buildLine(cid,items){
     d.innerHTML=`<div class="cname">${nm}</div>
       <input class="cinp" id="c-${it.id}" type="number" value="0" min="0" step="1" oninput="syncC('${it.id}')">
       <div class="cunit">${it.u}</div>
+      <input class="pinp" id="p-${it.id}" type="number" value="${it.c}" min="0" step="0.01" oninput="recalc()" title="Preço unitário (€)">
+      <div class="punit">€/u</div>
       <div class="cval" id="cv-${it.id}">—</div>`;
     ct.appendChild(d);
   });
@@ -378,6 +383,7 @@ function tog(id){document.getElementById('body-'+id)?.classList.toggle('hidden')
 function updCLbl(){document.getElementById('lbl-csub').textContent=document.getElementById('s-ctipo').value==='end'?'Nº Loops':'Nº Zonas';}
 function getH(){return document.querySelector('input[name="alt"]:checked')?.value||'lo';}
 function adj(id,d){const el=document.getElementById('q-'+id);if(!el)return;el.value=Math.max(0,(parseFloat(el.value)||0)+d);sync(id);}
+function getPrice(id,def){return parseFloat(document.getElementById('p-'+id)?.value)||def;}
 function sync(id){document.getElementById('row-'+id)?.classList.toggle('on',!!(parseFloat(document.getElementById('q-'+id)?.value)||0));recalc();}
 function syncC(id){document.getElementById('cln-'+id)?.classList.toggle('on',!!(parseFloat(document.getElementById('c-'+id)?.value)||0));recalc();}
 
@@ -471,14 +477,14 @@ function compute(){
   CABOS.forEach(it=>{
     const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
     if(!qty)return;
-    insMat+=qty*it.c;totalCaboM+=qty;
+    insMat+=qty*getPrice(it.id,it.c);totalCaboM+=qty;
   });
 
   // Tubos VD + Calhas
   TUBOS_VD.forEach(it=>{
     const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
     if(!qty)return;
-    insMat+=qty*it.c;
+    insMat+=qty*getPrice(it.id,it.c);
     instSecs+=qty*INST.passagem_vd;
     hasVD=true;
   });
@@ -486,13 +492,13 @@ function compute(){
   // Isogris (sem enfiamento, só material)
   ISOGRIS.forEach(it=>{
     const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
-    if(qty)insMat+=qty*it.c;
+    if(qty)insMat+=qty*getPrice(it.id,it.c);
   });
 
   // Outros
   OUTROS.forEach(it=>{
     const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
-    if(qty)insMat+=qty*it.c;
+    if(qty)insMat+=qty*getPrice(it.id,it.c);
   });
 
   // Enfiamento: só quando há VD ou calha
@@ -536,7 +542,7 @@ function recalc(){
     const vEl=document.getElementById('cv-'+it.id);
     const row=document.getElementById('cln-'+it.id);
     row?.classList.toggle('on',qty>0);
-    if(vEl)vEl.textContent=qty>0?fmtE(qty*it.c):'—';
+    if(vEl)vEl.textContent=qty>0?fmtE(qty*getPrice(it.id,it.c)):'—';
   });
   const nC=parseInt(document.getElementById('q-central').value)||0;
   const vC=document.getElementById('v-central');
@@ -613,15 +619,21 @@ function genEmail(){
   const spvL=EQ_EXT.filter(it=>it.sec==='SPV').reduce((a,it)=>{const q=parseInt(document.getElementById('q-'+it.id)?.value)||0;if(q>0)a.push(`${pad(q)}${it.unitEmail?' '+it.unitEmail:''} ${it.email}`);return a;},[]);
   if(spvL.length){lines.push('SPV');spvL.forEach(l=>lines.push(l));lines.push('');}
 
+  // TUBOS VD + Calhas
+  const matsL=[];
+  TUBOS_VD.forEach(it=>{const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)matsL.push(`${it.name} ----- ${q} m`);});
+  ISOGRIS.forEach(it=>{const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)matsL.push(`${it.name} ----- ${q} m`);});
+  if(matsL.length){lines.push('MATERIAIS');matsL.forEach(l=>lines.push(l));lines.push('');}
+
   // Outros com email
   OUTROS.forEach(it=>{if(!it.eml)return;const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)lines.push(`${pad(Math.round(q))} ${it.eml}`);});
 
   if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
-  if(r.vMont>0) lines.push(`Montagem dos Equipamentos --------- ${fmtE(r.vMont)}`);
-  if(r.vInst>0) lines.push(`Instalação Elétrica Montagem e Ligação -------------------------- ${fmtE(r.vInst)}`);
-  if(r.insMat>0)lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtE(r.insMat)}`);
+  lines.push(`Montagem dos Equipamentos --------- ${fmtE(r.vMont)}`);
+  lines.push(`Instalação Elétrica Montagem e Ligação -------------------------- ${fmtE(r.vInst)}`);
+  lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtE(r.insMat)}`);
   const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8);
   if(dias>0||hrem>0){
     lines.push('');
@@ -637,7 +649,7 @@ function renderEmail(lines,grey){
   out.style.fontStyle=grey?'italic':'normal';out.textContent='';
   lines.forEach(l=>{
     const s=document.createElement('span');
-    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
+    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|MATERIAIS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
     else if(/^(Montagem|Instalação|Custo Insumos)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
     else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
     else if(grey)s.style.cssText='color:#94a3b8';
@@ -658,6 +670,7 @@ function cpEmail(){
 function snapshotState(){
   const s={};
   document.querySelectorAll('.qinp,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
+  document.querySelectorAll('.pinp').forEach(el=>{s[el.id]=el.value;});
   ['q-central','s-ctipo','s-csub','s-cndet','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
   s.alt=getH();
   return s;
