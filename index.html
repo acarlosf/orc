@@ -705,8 +705,9 @@ function genEmail(){
   if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
-  lines.push(`Mão de Obra (Montagem + Instalação Elétrica) --------- ${fmt1(r.totalH)}h / ${fmtE(r.exec)}`);
+  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${fmt1(r.totalH)}h / ${fmtE(r.exec)}`);
   lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtE(r.insMat)}`);
+  lines.push(`Total Geral --------- ${fmtE(r.exec+r.insMat)}`);
   const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8);
   if(dias>0||hrem>0){
     lines.push('');
@@ -723,7 +724,7 @@ function renderEmail(lines,grey){
   lines.forEach(l=>{
     const s=document.createElement('span');
     if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|MATERIAIS|EXTRAS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
-    else if(/^(Mão de Obra|Custo Insumos)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
+    else if(/^(Mão de Obra|Custo Insumos|Total Geral)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
     else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
     else if(grey)s.style.cssText='color:#94a3b8';
     s.textContent=l+'\n';out.appendChild(s);
