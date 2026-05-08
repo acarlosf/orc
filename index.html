@@ -79,6 +79,10 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .pinp{width:62px;padding:3px 6px;border:1px solid #e2c97e;border-radius:4px;text-align:center;font-size:11px;color:#92400e;background:#fffbeb}
 .pinp:focus{outline:none;border-color:#b45309}
 .punit{font-size:10px;color:#b45309;width:20px}
+.extra-row{flex-wrap:wrap;gap:6px;padding:8px 14px}
+.xinp{padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px}
+.xinp:focus{outline:none;border-color:var(--blue2)}
+.xlbl{font-size:10px;color:var(--grey);white-space:nowrap}
 .warn-box{padding:6px 14px;background:#fffbeb;font-size:11px;color:#92400e;border-bottom:1px solid #fef3c7}
 #email-card{grid-column:span 2}
 .etbar{padding:10px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -214,7 +218,7 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 </div>
 
 <div class="card" id="card-iso">
-  <div class="chdr" onclick="tog('iso')">🌀 Isogris — sem enfiamento <span class="chev">▼</span></div>
+  <div class="chdr" onclick="tog('iso')">🌀 Isogris — com enfiamento de cabo <span class="chev">▼</span></div>
   <div class="cbody" id="body-iso"><div id="cl-iso"></div></div>
 </div>
 
@@ -224,6 +228,18 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 </div>
 
 </div><!-- /right -->
+
+<!-- Trabalhos Adicionais -->
+<div class="card" id="card-extra" style="grid-column:span 2">
+  <div class="chdr" onclick="tog('extra')">➕ Trabalhos Adicionais / Itens Personalizados <span class="chev">▼</span></div>
+  <div class="cbody" id="body-extra">
+    <div style="padding:8px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0">
+      <span style="font-size:11px;color:var(--grey)">Adicione trabalhos ou materiais que não constam nas tabelas acima. O tempo define a M.O.; o preço unitário define o material.</span>
+      <button class="btn-gen" style="font-size:11px;padding:5px 14px;margin-left:12px;white-space:nowrap" onclick="addExtra()">+ Adicionar Item</button>
+    </div>
+    <div id="extra-rows"></div>
+  </div>
+</div>
 
 <!-- Email -->
 <div class="card" id="email-card">
@@ -434,6 +450,45 @@ function getSn(rid){
 function delSn(rid){document.getElementById('sr-'+rid)?.remove();recalc();}
 function snMk(tp){return(tp==='2'||tp==='3')?'sinal_2faces':'sinal_1face';}
 
+// ── Trabalhos Adicionais / Extras ─────────────────────────────────────────────
+let extraId=0;
+function addExtra(){
+  const rid=++extraId;
+  const d=document.createElement('div');
+  d.className='cline extra-row';d.id='xrow-'+rid;
+  d.innerHTML=`
+    <span class="xlbl">Nome</span>
+    <input class="xinp" id="xname-${rid}" type="text" placeholder="Descrição do trabalho" style="flex:2;min-width:130px" oninput="recalc()">
+    <span class="xlbl">Un.</span>
+    <input class="xinp" id="xunit-${rid}" type="text" value="un" style="width:42px;text-align:center" oninput="recalc()">
+    <span class="xlbl">min/un</span>
+    <input class="xinp" id="xtime-${rid}" type="number" value="0" min="0" step="1" style="width:56px;text-align:center" oninput="recalc()" title="Tempo de execução (min/unidade)">
+    <span class="xlbl">Qtd</span>
+    <input class="xinp" id="xqty-${rid}" type="number" value="0" min="0" step="1" style="width:52px;text-align:center" oninput="recalc()">
+    <input class="pinp" id="xprice-${rid}" type="number" value="0" min="0" step="0.01" oninput="recalc()" title="Preço material unitário (€/un)">
+    <div class="punit">€/u</div>
+    <div class="cval" id="xval-${rid}">—</div>
+    <button class="del-btn" onclick="delExtra(${rid})">✕</button>`;
+  document.getElementById('extra-rows').appendChild(d);
+  recalc();
+}
+function delExtra(rid){document.getElementById('xrow-'+rid)?.remove();recalc();}
+function getExtras(){
+  const list=[];
+  document.querySelectorAll('.extra-row').forEach(row=>{
+    const rid=row.id.replace('xrow-','');
+    list.push({
+      rid,
+      name:(document.getElementById('xname-'+rid)?.value||'').trim(),
+      unit:(document.getElementById('xunit-'+rid)?.value||'un').trim(),
+      time:parseFloat(document.getElementById('xtime-'+rid)?.value)||0,
+      qty:parseFloat(document.getElementById('xqty-'+rid)?.value)||0,
+      price:parseFloat(document.getElementById('xprice-'+rid)?.value)||0,
+    });
+  });
+  return list;
+}
+
 // ── Compute ────────────────────────────────────────────────────────────────────
 function compute(){
   const rate=parseFloat(document.getElementById('i-rate').value)||65;
@@ -489,10 +544,10 @@ function compute(){
     hasVD=true;
   });
 
-  // Isogris (sem enfiamento, só material)
+  // Isogris (com enfiamento de cabo — igual a VD)
   ISOGRIS.forEach(it=>{
     const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;
-    if(qty)insMat+=qty*getPrice(it.id,it.c);
+    if(qty){insMat+=qty*getPrice(it.id,it.c);hasVD=true;}
   });
 
   // Outros
@@ -501,8 +556,15 @@ function compute(){
     if(qty)insMat+=qty*getPrice(it.id,it.c);
   });
 
-  // Enfiamento: só quando há VD ou calha
+  // Enfiamento: quando há VD, calha ou isogris
   if(hasVD&&totalCaboM>0) instSecs+=totalCaboM*INST.enfiamento;
+
+  // Trabalhos adicionais
+  getExtras().forEach(ex=>{
+    if(!ex.qty)return;
+    montSecs+=ex.qty*ex.time*60;
+    if(ex.price>0)insMat+=ex.qty*ex.price;
+  });
 
   const hMont=montSecs/3600;
   const hInst=instSecs/3600;
@@ -547,6 +609,14 @@ function recalc(){
   const nC=parseInt(document.getElementById('q-central').value)||0;
   const vC=document.getElementById('v-central');
   if(vC)vC.textContent=nC>0?fmtE(nC*90/60*rate):'—';
+  const extra_pct=1+(parseFloat(document.getElementById('i-extra').value)||0)/100;
+  getExtras().forEach(ex=>{
+    const vEl=document.getElementById('xval-'+ex.rid);
+    if(!vEl)return;
+    const moVal=ex.qty*ex.time/60*rate*extra_pct;
+    const matVal=ex.qty*ex.price;
+    vEl.textContent=ex.qty>0&&(moVal+matVal)>0?fmtE(moVal+matVal):'—';
+  });
 
   // Result bar
   document.getElementById('r-exec').textContent =fmtE(r.exec);
@@ -628,11 +698,14 @@ function genEmail(){
   // Outros com email
   OUTROS.forEach(it=>{if(!it.eml)return;const q=parseFloat(document.getElementById('c-'+it.id)?.value)||0;if(q>0)lines.push(`${pad(Math.round(q))} ${it.eml}`);});
 
+  // Trabalhos adicionais
+  const extrasL=getExtras().filter(ex=>ex.qty>0&&ex.name);
+  if(extrasL.length){lines.push('EXTRAS');extrasL.forEach(ex=>lines.push(`${pad(ex.qty)} ${ex.unit} ${ex.name}`));lines.push('');}
+
   if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
-  lines.push(`Montagem dos Equipamentos --------- ${fmtE(r.vMont)}`);
-  lines.push(`Instalação Elétrica Montagem e Ligação -------------------------- ${fmtE(r.vInst)}`);
+  lines.push(`Mão de Obra (Montagem + Instalação Elétrica) --------- ${fmt1(r.totalH)}h / ${fmtE(r.exec)}`);
   lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtE(r.insMat)}`);
   const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8);
   if(dias>0||hrem>0){
@@ -649,8 +722,8 @@ function renderEmail(lines,grey){
   out.style.fontStyle=grey?'italic':'normal';out.textContent='';
   lines.forEach(l=>{
     const s=document.createElement('span');
-    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|MATERIAIS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
-    else if(/^(Montagem|Instalação|Custo Insumos)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
+    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|MATERIAIS|EXTRAS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
+    else if(/^(Mão de Obra|Custo Insumos)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
     else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
     else if(grey)s.style.cssText='color:#94a3b8';
     s.textContent=l+'\n';out.appendChild(s);
@@ -673,12 +746,20 @@ function snapshotState(){
   document.querySelectorAll('.pinp').forEach(el=>{s[el.id]=el.value;});
   ['q-central','s-ctipo','s-csub','s-cndet','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
   s.alt=getH();
+  s._extras=getExtras().map(ex=>({name:ex.name,unit:ex.unit,time:document.getElementById('xtime-'+ex.rid)?.value||0,qty:document.getElementById('xqty-'+ex.rid)?.value||0,price:document.getElementById('xprice-'+ex.rid)?.value||0}));
   return s;
 }
 function loadState(){
   try{
     const s=JSON.parse(localStorage.getItem('sg5')||'{}');
-    Object.entries(s).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});
+    if(s._extras&&Array.isArray(s._extras)){
+      s._extras.forEach(ex=>{
+        addExtra();
+        const rid=extraId;
+        ['name','unit','time','qty','price'].forEach(f=>{const el=document.getElementById('x'+f+'-'+rid);if(el)el.value=ex[f]??'';});
+      });
+    }
+    Object.entries(s).forEach(([k,v])=>{if(k.startsWith('_'))return;const el=document.getElementById(k);if(el)el.value=v;});
     if(s.alt){const el=document.querySelector(`input[name="alt"][value="${s.alt}"]`);if(el)el.checked=true;}
     updCLbl();
     document.querySelectorAll('.qinp').forEach(el=>{const id=el.id.replace('q-','');sync(id);});
@@ -693,6 +774,7 @@ function resetAll(){
   ['q-central','s-cndet','i-extra'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=0;});
   document.querySelector('input[name="alt"][value="lo"]').checked=true;
   document.getElementById('sb-emerg').innerHTML='';document.getElementById('sb-inc').innerHTML='';
+  document.getElementById('extra-rows').innerHTML='';
   document.querySelectorAll('.item.on,.cline.on').forEach(r=>r.classList.remove('on'));
   renderEmail(['← Preencha os equipamentos e clique "Gerar Email"'],true);
   recalc();
