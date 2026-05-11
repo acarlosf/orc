@@ -206,11 +206,8 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
   <div class="chdr" onclick="tog('ext')">🧯 Extinção <span class="chev">▼</span></div>
   <div class="cbody" id="body-ext">
     <div id="eq-ext"></div>
-    <div class="subsec-hdr" onclick="togSub('ins-ext')">🔌 Cabos e Insumos <span id="arr-ins-ext">▶</span></div>
+    <div class="subsec-hdr" onclick="togSub('ins-ext')">📦 Materiais / Fixação <span id="arr-ins-ext">▶</span></div>
     <div id="sub-ins-ext" class="hidden">
-      <div id="cl-ext"></div>
-      <div class="sublbl-vd">🟡 Tubos VD / Calhas / ISOGRIS</div>
-      <div id="cl-vd-ext"></div>
       <div id="si-rows-ext"></div>
       <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('ext')">+ Material</button></div>
     </div>
@@ -423,7 +420,7 @@ const SYS_LIST=[
   {id:'saie', emailTag:'SAIE',           cables:()=>CABOS.filter(c=>c.sec==='SAIE'), eqs:()=>EQ_SAIE,                              sigGroup:null,  noVD:false},
   {id:'emerg',emailTag:'SINAL',          cables:()=>[],                              eqs:()=>[],                                   sigGroup:'emerg',noVD:true},
   {id:'inc',  emailTag:'SINAL INCÊNDIO', cables:()=>[],                              eqs:()=>[],                                   sigGroup:'inc', noVD:true},
-  {id:'ext',  emailTag:'EXTINÇÃO',       cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'), sigGroup:null,  noVD:false},
+  {id:'ext',  emailTag:'EXTINÇÃO',       cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'), sigGroup:null,  noVD:true},
   {id:'spv',  emailTag:'SPV',            cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='SPV'),       sigGroup:null,  noVD:false},
 ];
 const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
