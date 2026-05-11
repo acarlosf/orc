@@ -185,8 +185,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-cent">
-  <div class="chdr" onclick="tog('cent')">🏭 Central de Incêndio <span class="chev">▼</span></div>
-  <div class="cbody" id="body-cent">
+  <div class="chdr closed" onclick="tog('cent')">Central de Incêndio <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-cent">
     <div class="cblock">
       <label>Tipo, dimensão e nº de detetores do sistema</label>
       <div class="crow">
@@ -209,8 +209,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-sadi">
-  <div class="chdr" onclick="tog('sadi')">SADI — Deteção de Incêndio <span class="chev">▼</span></div>
-  <div class="cbody" id="body-sadi">
+  <div class="chdr closed" onclick="tog('sadi')">SADI — Deteção de Incêndio <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-sadi">
     <div id="eq-sadi"></div>
     <div class="subsec-hdr" onclick="togSub('ins-sadi')">Cabos e Insumos <span id="arr-ins-sadi">▶</span></div>
     <div id="sub-ins-sadi" class="hidden">
@@ -229,8 +229,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-saie">
-  <div class="chdr" onclick="tog('saie')">SAIE — Iluminação de Emergência <span class="chev">▼</span></div>
-  <div class="cbody" id="body-saie">
+  <div class="chdr closed" onclick="tog('saie')">SAIE — Iluminação de Emergência <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-saie">
     <div id="eq-saie"></div>
     <div class="subsec-hdr" onclick="togSub('ins-saie')">Cabos e Insumos <span id="arr-ins-saie">▶</span></div>
     <div id="sub-ins-saie" class="hidden">
@@ -249,8 +249,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-ext">
-  <div class="chdr" onclick="tog('ext')">Extinção <span class="chev">▼</span></div>
-  <div class="cbody" id="body-ext">
+  <div class="chdr closed" onclick="tog('ext')">Extinção <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-ext">
     <div id="eq-ext"></div>
     <div class="subsec-hdr" onclick="togSub('ins-ext')">Materiais / Fixação <span id="arr-ins-ext">▶</span></div>
     <div id="sub-ins-ext" class="hidden">
@@ -266,8 +266,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-spv">
-  <div class="chdr" onclick="tog('spv')">SPV — Sistema de Proteção de Vão <span class="chev">▼</span></div>
-  <div class="cbody" id="body-spv">
+  <div class="chdr closed" onclick="tog('spv')">SPV — Sistema de Proteção de Vão <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-spv">
     <div id="eq-spv"></div>
     <div class="subsec-hdr" onclick="togSub('ins-spv')">Materiais / Fixação <span id="arr-ins-spv">▶</span></div>
     <div id="sub-ins-spv" class="hidden">
@@ -283,8 +283,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-desfum">
-  <div class="chdr" onclick="tog('desfum')" style="background:#1a3a5c">Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
-  <div class="cbody" id="body-desfum">
+  <div class="chdr closed" onclick="tog('desfum')" style="background:#1a3a5c">Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-desfum">
     <div id="eq-desfum"></div>
     <div class="subsec-hdr" onclick="togSub('ins-desfum')">Cabos e Insumos <span id="arr-ins-desfum">▶</span></div>
     <div id="sub-ins-desfum" class="hidden">
@@ -303,8 +303,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-gas">
-  <div class="chdr" onclick="tog('gas')" style="background:#4a3000">Deteção de Gás — Natural e Butano/Propano <span class="chev">▼</span></div>
-  <div class="cbody" id="body-gas">
+  <div class="chdr closed" onclick="tog('gas')" style="background:#4a3000">Deteção de Gás — Natural e Butano/Propano <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-gas">
     <div id="eq-gas"></div>
     <div class="subsec-hdr" onclick="togSub('ins-gas')">Cabos e Insumos <span id="arr-ins-gas">▶</span></div>
     <div id="sub-ins-gas" class="hidden">
@@ -323,8 +323,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-co">
-  <div class="chdr" onclick="tog('co')" style="background:#1a2a4a">Deteção de CO — Monóxido de Carbono <span class="chev">▼</span></div>
-  <div class="cbody" id="body-co">
+  <div class="chdr closed" onclick="tog('co')" style="background:#1a2a4a">Deteção de CO — Monóxido de Carbono <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-co">
     <div id="eq-co"></div>
     <div class="subsec-hdr" onclick="togSub('ins-co')">Cabos e Insumos <span id="arr-ins-co">▶</span></div>
     <div id="sub-ins-co" class="hidden">
@@ -343,8 +343,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-ajax">
-  <div class="chdr" onclick="tog('ajax')" style="background:#1a1a3a">Ajax — Sistema Sem Fio <span class="chev">▼</span></div>
-  <div class="cbody" id="body-ajax">
+  <div class="chdr closed" onclick="tog('ajax')" style="background:#1a1a3a">Ajax — Sistema Sem Fio <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-ajax">
     <div id="eq-ajax"></div>
     <div class="subsec-hdr" onclick="togSub('ins-ajax')">Materiais / Configuração <span id="arr-ins-ajax">▶</span></div>
     <div id="sub-ins-ajax" class="hidden">
@@ -366,8 +366,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 <div>
 
 <div class="card" id="card-sinais-emerg">
-  <div class="chdr" onclick="tog('sinais-emerg')" style="background:#1a6b3a">Sinais Emergência — Saídas &amp; Vias Evacuação <span class="chev">▼</span></div>
-  <div class="cbody" id="body-sinais-emerg">
+  <div class="chdr closed" onclick="tog('sinais-emerg')" style="background:#1a6b3a">Sinais Emergência — Saídas &amp; Vias Evacuação <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-sinais-emerg">
     <div class="stbar">
       <button class="btn-add" onclick="addSinal('emerg')">+ Adicionar Sinal</button>
       <span style="font-size:11px;color:var(--grey)">Sinais verdes — P0001 a P0248</span>
@@ -390,8 +390,8 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div>
 
 <div class="card" id="card-sinais-inc">
-  <div class="chdr" onclick="tog('sinais-inc')" style="background:#6b1a1a">Sinais Incêndio — Equipamentos &amp; Sistemas <span class="chev">▼</span></div>
-  <div class="cbody" id="body-sinais-inc">
+  <div class="chdr closed" onclick="tog('sinais-inc')" style="background:#6b1a1a">Sinais Incêndio — Equipamentos &amp; Sistemas <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-sinais-inc">
     <div class="stbar">
       <button class="btn-add" onclick="addSinal('inc')">+ Adicionar Sinal</button>
       <span style="font-size:11px;color:var(--grey)">Sinais vermelhos — P0400 a P0954</span>
@@ -418,7 +418,7 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 
 <!-- Email -->
 <div class="card" id="email-card">
-  <div class="chdr" style="cursor:default">Email de Orçamento Interno</div>
+  <div class="chdr closed" style="cursor:default">Email de Orçamento Interno</div>
   <div class="etbar">
     <button class="btn-gen" onclick="genEmail()">Gerar Email</button>
     <button class="btn-cp" onclick="cpEmail()">Copiar</button>
