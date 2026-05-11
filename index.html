@@ -201,11 +201,9 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
         </select>
         <div><div class="sublbl" id="lbl-csub">Nº Loops</div>
           <input type="number" id="s-csub" value="1" min="1" max="32" oninput="recalc()" class="sub-num" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12.5px"></div>
-        <div><div class="sublbl">Nº Detetores sistema</div>
-          <input type="number" id="s-cndet" value="0" min="0" oninput="recalc()" style="width:75px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12.5px;text-align:center"></div>
         <div class="ival" id="v-central">—</div>
       </div>
-      <div style="font-size:10.5px;color:var(--grey);margin-top:6px">ℹ Fixação da central = <b>nº detetores sistema</b> × 600s · Programação = 1 por central × 60s</div>
+      <div style="font-size:10.5px;color:var(--grey);margin-top:6px">ℹ Fixação da central = <b>nº detetores (auto)</b> × 600s · Programação = 1 por central × 60s</div>
     </div>
   </div>
 </div>
@@ -441,6 +439,7 @@ const MONT={
   seletor:{lo:40,hi:40},fecho_pcf:{lo:30,hi:30},barra:{lo:60,hi:60},
   puxador:{lo:15,hi:15},fita:{lo:1,hi:1},
   sinal_1face:{lo:8,hi:12},sinal_2faces:{lo:15,hi:25},sinal_excel:{lo:30,hi:30},
+  painel_rep:{lo:90,hi:90},
   motor_damper:{lo:45,hi:75},damper:{lo:30,hi:50},modulo_int:{lo:20,hi:20},
   central_gas:{lo:60,hi:60},electrovalv:{lo:30,hi:30},
   ajax_hub:{lo:25,hi:25},ajax_det:{lo:8,hi:10},ajax_siren:{lo:10,hi:15}
@@ -467,6 +466,8 @@ const EQ_SADI=[
   {id:'sirene',     name:'Sirenes de Incêndio',                    mk:'sirene',      inst:{base:0,lig:1,det:0,ensaio:1},email:'sirenes incêndio'},
   {id:'sinalizador',name:'Sinalizadores Incêndio/Monóxido/Gás',   mk:'sinalizador', inst:{base:0,lig:1,det:0,ensaio:1},email:'sinalizadores incêndio/monóxido/gás'},
   {id:'bloco-acus', name:'Blocos Acústico-Luminosos "Atm. Perigosa"',mk:'sinalizador',inst:{base:0,lig:1,det:0,ensaio:1},email:'blocos acústico-luminosos "Atmosfera Perigosa"'},
+  {id:'rep-ativo',  name:'Painel Repetidor Ativo (EN54)',         mk:'painel_rep', inst:{base:1,lig:1,det:0,ensaio:1},email:'painéis repetidores ativos',   addrOnly:true},
+  {id:'rep-passivo',name:'Painel Repetidor Passivo (EN54)',       mk:'painel_rep', inst:{base:1,lig:1,det:0,ensaio:1},email:'painéis repetidores passivos', addrOnly:true},
 ];
 const EQ_SAIE=[
   {id:'il-perm',name:'Armadura Emergência Permanente',    mk:'ilum_emerg',fhi:0,inst:{base:1,lig:1,ensaio:1},email:'armaduras de iluminação emergência permanente'},
@@ -598,7 +599,8 @@ function buildEq(cid,items){
   items.forEach(it=>{
     const m=MONT[it.mk],tag=m.lo===m.hi?`${m.lo} min/un`:`≤3m:${m.lo}/hi:${m.hi} min`;
     const d=document.createElement('div');
-    d.className='item';d.id='row-'+it.id;
+    d.className='item'+(it.addrOnly?' addr-only':'');d.id='row-'+it.id;
+    if(it.addrOnly)d.style.display='none';
     d.innerHTML=`<div class="iname">${it.name}</div><div class="itag">${tag}</div>
       <div class="qwrap"><button class="qbtn" onclick="adj('${it.id}',-1)">−</button>
       <input class="qinp" id="q-${it.id}" type="number" value="0" min="0" step="1" oninput="sync('${it.id}')">
@@ -654,7 +656,11 @@ SYS_LIST.forEach(s=>{if(!s.noVD)buildSysVD(s.id);});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function tog(id){document.getElementById('body-'+id)?.classList.toggle('hidden');document.querySelector('#card-'+id+' .chdr')?.classList.toggle('closed');}
-function updCLbl(){document.getElementById('lbl-csub').textContent=document.getElementById('s-ctipo').value==='end'?'Nº Loops':'Nº Zonas';}
+function updCLbl(){
+  const isEnd=document.getElementById('s-ctipo').value==='end';
+  document.getElementById('lbl-csub').textContent=isEnd?'Nº Loops':'Nº Zonas';
+  document.querySelectorAll('.addr-only').forEach(el=>el.style.display=isEnd?'flex':'none');
+}
 function getH(){return document.querySelector('input[name="alt"]:checked')?.value||'lo';}
 function adj(id,d){const el=document.getElementById('q-'+id);if(!el)return;el.value=Math.max(0,(parseFloat(el.value)||0)+d);sync(id);}
 function getPrice(id,def){return parseFloat(document.getElementById('p-'+id)?.value)||def;}
@@ -781,7 +787,7 @@ function computeSys(sysId,rate,extra,h){
   // Central (SADI only)
   if(sysId==='sadi'){
     const nC=parseInt(document.getElementById('q-central')?.value)||0;
-    const nDS=parseInt(document.getElementById('s-cndet')?.value)||0;
+    const nDS=EQ_SADI.filter(it=>it.inst.det).reduce((s,it)=>s+(parseInt(document.getElementById('q-'+it.id)?.value)||0),0);
     if(nC>0){montSecs+=nC*90*60;instSecs+=nDS*INST.fixacao_central;instSecs+=nC*(INST.lig_central+INST.prog_central);}
   }
   // Signals
@@ -1031,7 +1037,7 @@ function snapshotState(){
   const s={};
   document.querySelectorAll('.qinp,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
   document.querySelectorAll('.pinp').forEach(el=>{s[el.id]=el.value;});
-  ['q-central','s-ctipo','s-csub','s-cndet','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
+  ['q-central','s-ctipo','s-csub','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
   s.alt=getH();
   // Per-system data
   const sysData={};
@@ -1073,7 +1079,7 @@ function resetAll(){
   localStorage.removeItem('sg5');
   document.querySelectorAll('.qinp').forEach(i=>i.value=0);
   document.querySelectorAll('.cinp').forEach(i=>i.value=0);
-  ['q-central','s-cndet','i-extra'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=0;});
+  ['q-central','i-extra'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=0;});
   document.querySelector('input[name="alt"][value="lo"]').checked=true;
   document.getElementById('sb-emerg').innerHTML='';document.getElementById('sb-inc').innerHTML='';
   SYS_LIST.forEach(s=>{
