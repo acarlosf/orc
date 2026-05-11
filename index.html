@@ -239,6 +239,83 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
   </div>
 </div>
 
+<div class="card" id="card-desfum">
+  <div class="chdr" onclick="tog('desfum')" style="background:#1a3a5c">💨 Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
+  <div class="cbody" id="body-desfum">
+    <div id="eq-desfum"></div>
+    <div class="subsec-hdr" onclick="togSub('ins-desfum')">🔌 Cabos e Insumos <span id="arr-ins-desfum">▶</span></div>
+    <div id="sub-ins-desfum" class="hidden">
+      <div id="cl-desfum"></div>
+      <div class="sublbl-vd">🟡 Tubos VD / Calhas / ISOGRIS</div>
+      <div id="cl-vd-desfum"></div>
+      <div id="si-rows-desfum"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('desfum')">+ Material</button></div>
+    </div>
+    <div class="subsec-hdr" onclick="togSub('ext-desfum')">➕ Trabalhos Adicionais <span id="arr-ext-desfum">▶</span></div>
+    <div id="sub-ext-desfum" class="hidden">
+      <div id="se-rows-desfum"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysExtra('desfum')">+ Trabalho</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="card-gas">
+  <div class="chdr" onclick="tog('gas')" style="background:#4a3000">⛽ Deteção de Gás — Natural e Butano/Propano <span class="chev">▼</span></div>
+  <div class="cbody" id="body-gas">
+    <div id="eq-gas"></div>
+    <div class="subsec-hdr" onclick="togSub('ins-gas')">🔌 Cabos e Insumos <span id="arr-ins-gas">▶</span></div>
+    <div id="sub-ins-gas" class="hidden">
+      <div id="cl-gas"></div>
+      <div class="sublbl-vd">🟡 Tubos VD / Calhas / ISOGRIS</div>
+      <div id="cl-vd-gas"></div>
+      <div id="si-rows-gas"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('gas')">+ Material</button></div>
+    </div>
+    <div class="subsec-hdr" onclick="togSub('ext-gas')">➕ Trabalhos Adicionais <span id="arr-ext-gas">▶</span></div>
+    <div id="sub-ext-gas" class="hidden">
+      <div id="se-rows-gas"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysExtra('gas')">+ Trabalho</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="card-co">
+  <div class="chdr" onclick="tog('co')" style="background:#1a2a4a">🔵 Deteção de CO — Monóxido de Carbono <span class="chev">▼</span></div>
+  <div class="cbody" id="body-co">
+    <div id="eq-co"></div>
+    <div class="subsec-hdr" onclick="togSub('ins-co')">🔌 Cabos e Insumos <span id="arr-ins-co">▶</span></div>
+    <div id="sub-ins-co" class="hidden">
+      <div id="cl-co"></div>
+      <div class="sublbl-vd">🟡 Tubos VD / Calhas / ISOGRIS</div>
+      <div id="cl-vd-co"></div>
+      <div id="si-rows-co"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('co')">+ Material</button></div>
+    </div>
+    <div class="subsec-hdr" onclick="togSub('ext-co')">➕ Trabalhos Adicionais <span id="arr-ext-co">▶</span></div>
+    <div id="sub-ext-co" class="hidden">
+      <div id="se-rows-co"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysExtra('co')">+ Trabalho</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="card-ajax">
+  <div class="chdr" onclick="tog('ajax')" style="background:#1a1a3a">📡 Ajax — Sistema Sem Fio <span class="chev">▼</span></div>
+  <div class="cbody" id="body-ajax">
+    <div id="eq-ajax"></div>
+    <div class="subsec-hdr" onclick="togSub('ins-ajax')">📦 Materiais / Configuração <span id="arr-ins-ajax">▶</span></div>
+    <div id="sub-ins-ajax" class="hidden">
+      <div id="si-rows-ajax"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('ajax')">+ Material</button></div>
+    </div>
+    <div class="subsec-hdr" onclick="togSub('ext-ajax')">➕ Trabalhos Adicionais <span id="arr-ext-ajax">▶</span></div>
+    <div id="sub-ext-ajax" class="hidden">
+      <div id="se-rows-ajax"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysExtra('ajax')">+ Trabalho</button></div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /left -->
 
 <!-- RIGHT -->
@@ -316,7 +393,10 @@ const MONT={
   extintor:{lo:10,hi:10},agulheta:{lo:10,hi:10},mola:{lo:40,hi:40},
   seletor:{lo:40,hi:40},fecho_pcf:{lo:30,hi:30},barra:{lo:60,hi:60},
   puxador:{lo:15,hi:15},fita:{lo:1,hi:1},
-  sinal_1face:{lo:10,hi:20},sinal_2faces:{lo:10,hi:20},sinal_excel:{lo:30,hi:30}
+  sinal_1face:{lo:10,hi:20},sinal_2faces:{lo:10,hi:20},sinal_excel:{lo:30,hi:30},
+  motor_damper:{lo:45,hi:75},damper:{lo:30,hi:50},modulo_int:{lo:20,hi:20},
+  central_gas:{lo:60,hi:60},electrovalv:{lo:30,hi:30},
+  ajax_hub:{lo:25,hi:25},ajax_det:{lo:8,hi:10},ajax_siren:{lo:10,hi:15}
 };
 // All times in seconds
 const INST={
@@ -358,6 +438,31 @@ const EQ_EXT=[
   {id:'barra',     name:'Barra Antipânico',           mk:'barra',    inst:{},       email:'barras antipânico',             sec:'SPV'},
   {id:'puxador',   name:'Puxador',                    mk:'puxador',  inst:{},       email:'puxadores',                     sec:'SPV'},
   {id:'fita',      name:'Fita Intumescente (metro)',  mk:'fita',     inst:{},       email:'fita intumescente',             sec:'SPV', unitEmail:'m'},
+];
+const EQ_DESFUM=[
+  {id:'desfum-boton',  name:'Botão Manual de Acionamento',    mk:'botoneira',   inst:{base:1,lig:1,det:0,ensaio:1}, email:'botões manuais desenfumagem'},
+  {id:'desfum-motor',  name:'Motor Atuador de Damper',         mk:'motor_damper',inst:{base:0,lig:1,det:0,ensaio:1}, email:'motores atuadores de damper'},
+  {id:'desfum-damper', name:'Damper Corta-Fugas',              mk:'damper',      inst:{base:0,lig:0,det:0,ensaio:1}, email:'dampers corta-fugas'},
+  {id:'desfum-modint', name:'Módulo de Integração c/ Central', mk:'modulo_int',  inst:{base:0,lig:1,det:0,ensaio:1}, email:'módulos integração central incêndio'},
+];
+const EQ_GAS=[
+  {id:'gas-central',      name:'Central / Painel de Deteção de Gás', mk:'central_gas', inst:{base:0,lig:1,det:0,ensaio:1}, email:'central deteção de gás'},
+  {id:'gas-det-nat',      name:'Detetor Gás Natural (CH4)',           mk:'det_gas',     inst:{base:1,lig:1,det:0,ensaio:1}, email:'detetores gás natural'},
+  {id:'gas-det-but',      name:'Detetor Butano / Propano (LPG)',      mk:'det_gas',     inst:{base:1,lig:1,det:0,ensaio:1}, email:'detetores butano/propano'},
+  {id:'gas-sinalizador',  name:'Sinalizador Atmosfera Perigosa',      mk:'sinalizador', inst:{base:0,lig:1,det:0,ensaio:1}, email:'sinalizadores atmosfera perigosa'},
+  {id:'gas-electrovalvula',name:'Electroválvula de Corte',            mk:'electrovalv', inst:{base:0,lig:1,det:0,ensaio:1}, email:'electroválvulas de corte'},
+];
+const EQ_CO=[
+  {id:'co-central',    name:'Central de Deteção de CO',            mk:'central_gas', inst:{base:0,lig:1,det:0,ensaio:1}, email:'central deteção de CO'},
+  {id:'co-detetor',    name:'Detetor de CO',                        mk:'det_gas',     inst:{base:1,lig:1,det:0,ensaio:1}, email:'detetores CO'},
+  {id:'co-sinalizador',name:'Sinalizador Atmosfera Perigosa (CO)',  mk:'sinalizador', inst:{base:0,lig:1,det:0,ensaio:1}, email:'sinalizadores atmosfera perigosa CO'},
+];
+const EQ_AJAX=[
+  {id:'ajax-hub',       name:'Hub Ajax (Central Sem Fio 2G/4G)',    mk:'ajax_hub',   inst:{base:0,lig:0,det:0,ensaio:1}, email:'hub Ajax central'},
+  {id:'ajax-fireprotect',name:'FireProtect (Fumo + Calor)',          mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect'},
+  {id:'ajax-fireplus',  name:'FireProtect Plus (Fumo+Calor+CO)',     mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect Plus'},
+  {id:'ajax-siren-int', name:'HomeSiren (Sirene Interior Sem Fio)',  mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes HomeSiren'},
+  {id:'ajax-siren-ext', name:'StreetSiren (Sirene Exterior Sem Fio)',mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes StreetSiren'},
 ];
 // Sinais de Emergência (verde) — saídas e vias de evacuação
 const SINAIS_EMERG=[
@@ -422,6 +527,10 @@ const SYS_LIST=[
   {id:'inc',  emailTag:'SINAL INCÊNDIO', cables:()=>[],                              eqs:()=>[],                                   sigGroup:'inc', noVD:true},
   {id:'ext',  emailTag:'EXTINÇÃO',       cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'), sigGroup:null,  noVD:true},
   {id:'spv',  emailTag:'SPV',            cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='SPV'),       sigGroup:null,  noVD:false},
+  {id:'desfum',emailTag:'DESENFUMAGEM', cables:()=>[], eqs:()=>EQ_DESFUM, sigGroup:null, noVD:false},
+  {id:'gas',   emailTag:'DETEÇÃO GÁS',  cables:()=>[], eqs:()=>EQ_GAS,   sigGroup:null, noVD:false},
+  {id:'co',    emailTag:'DETEÇÃO CO',   cables:()=>[], eqs:()=>EQ_CO,    sigGroup:null, noVD:false},
+  {id:'ajax',  emailTag:'AJAX SEM FIO', cables:()=>[], eqs:()=>EQ_AJAX,  sigGroup:null, noVD:true},
 ];
 const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
 
@@ -458,6 +567,10 @@ function buildLine(cid,items){
 buildEq('eq-sadi',EQ_SADI);buildEq('eq-saie',EQ_SAIE);
 buildEq('eq-ext',EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'));
 buildEq('eq-spv',EQ_EXT.filter(e=>e.sec==='SPV'));
+buildEq('eq-desfum', EQ_DESFUM);
+buildEq('eq-gas',    EQ_GAS);
+buildEq('eq-co',     EQ_CO);
+buildEq('eq-ajax',   EQ_AJAX);
 buildLine('cl-sadi',CABOS.filter(c=>c.sec==='SADI'));
 buildLine('cl-saie',CABOS.filter(c=>c.sec==='SAIE'));
 function buildSysVD(sysId){
@@ -673,7 +786,7 @@ function recalc(){
   const h=getH();
 
   // Update item values
-  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT];
+  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX];
   allEq.forEach(it=>{
     const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;
     const row=document.getElementById('row-'+it.id);
@@ -833,7 +946,7 @@ function renderEmail(lines,grey){
   out.style.fontStyle=grey?'italic':'normal';out.textContent='';
   lines.forEach(l=>{
     const s=document.createElement('span');
-    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|MATERIAIS|EXTRAS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
+    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|DESENFUMAGEM|DETEÇÃO GÁS|DETEÇÃO CO|AJAX SEM FIO|MATERIAIS|EXTRAS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
     else if(/^\s{2}(M\.O\.|Insumos)/.test(l))s.style.cssText='color:#86efac;font-size:12px';
     else if(/^(Mão de Obra|Custo Insumos|Total Geral)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
     else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
