@@ -258,11 +258,8 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
       <thead><tr><th>Designação</th><th style="width:68px">Tipo</th><th style="width:98px">Tamanho</th><th style="width:54px">Qtd.</th><th style="width:64px">M.O.</th><th style="width:28px"></th></tr></thead>
       <tbody id="sb-emerg"></tbody>
     </table>
-    <div class="subsec-hdr" onclick="togSub('ins-emerg')">🔌 Cabos e Insumos <span id="arr-ins-emerg">▶</span></div>
+    <div class="subsec-hdr" onclick="togSub('ins-emerg')">📦 Materiais / Fixação <span id="arr-ins-emerg">▶</span></div>
     <div id="sub-ins-emerg" class="hidden">
-      <div id="cl-emerg"></div>
-      <div class="sublbl-vd">🟡 Tubos VD / Calhas / ISOGRIS</div>
-      <div id="cl-vd-emerg"></div>
       <div id="si-rows-emerg"></div>
       <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('emerg')">+ Material</button></div>
     </div>
@@ -285,11 +282,8 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
       <thead><tr><th>Designação</th><th style="width:68px">Tipo</th><th style="width:98px">Tamanho</th><th style="width:54px">Qtd.</th><th style="width:64px">M.O.</th><th style="width:28px"></th></tr></thead>
       <tbody id="sb-inc"></tbody>
     </table>
-    <div class="subsec-hdr" onclick="togSub('ins-inc')">🔌 Cabos e Insumos <span id="arr-ins-inc">▶</span></div>
+    <div class="subsec-hdr" onclick="togSub('ins-inc')">📦 Materiais / Fixação <span id="arr-ins-inc">▶</span></div>
     <div id="sub-ins-inc" class="hidden">
-      <div id="cl-inc"></div>
-      <div class="sublbl-vd">🟡 Tubos VD / Calhas / ISOGRIS</div>
-      <div id="cl-vd-inc"></div>
       <div id="si-rows-inc"></div>
       <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('inc')">+ Material</button></div>
     </div>
@@ -425,12 +419,12 @@ const OUTROS=[
 ];
 
 const SYS_LIST=[
-  {id:'sadi', emailTag:'SADI',           cables:()=>CABOS.filter(c=>c.sec==='SADI'), eqs:()=>EQ_SADI,                              sigGroup:null},
-  {id:'saie', emailTag:'SAIE',           cables:()=>CABOS.filter(c=>c.sec==='SAIE'), eqs:()=>EQ_SAIE,                              sigGroup:null},
-  {id:'emerg',emailTag:'SINAL',          cables:()=>[],                              eqs:()=>[],                                   sigGroup:'emerg'},
-  {id:'inc',  emailTag:'SINAL INCÊNDIO', cables:()=>[],                              eqs:()=>[],                                   sigGroup:'inc'},
-  {id:'ext',  emailTag:'EXTINÇÃO',       cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'), sigGroup:null},
-  {id:'spv',  emailTag:'SPV',            cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='SPV'),       sigGroup:null},
+  {id:'sadi', emailTag:'SADI',           cables:()=>CABOS.filter(c=>c.sec==='SADI'), eqs:()=>EQ_SADI,                              sigGroup:null,  noVD:false},
+  {id:'saie', emailTag:'SAIE',           cables:()=>CABOS.filter(c=>c.sec==='SAIE'), eqs:()=>EQ_SAIE,                              sigGroup:null,  noVD:false},
+  {id:'emerg',emailTag:'SINAL',          cables:()=>[],                              eqs:()=>[],                                   sigGroup:'emerg',noVD:true},
+  {id:'inc',  emailTag:'SINAL INCÊNDIO', cables:()=>[],                              eqs:()=>[],                                   sigGroup:'inc', noVD:true},
+  {id:'ext',  emailTag:'EXTINÇÃO',       cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'), sigGroup:null,  noVD:false},
+  {id:'spv',  emailTag:'SPV',            cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='SPV'),       sigGroup:null,  noVD:false},
 ];
 const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
 
@@ -484,7 +478,7 @@ function buildSysVD(sysId){
     ct.appendChild(d);
   });
 }
-SYS_LIST.forEach(s=>buildSysVD(s.id));
+SYS_LIST.forEach(s=>{if(!s.noVD)buildSysVD(s.id);});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function tog(id){document.getElementById('body-'+id)?.classList.toggle('hidden');document.querySelector('#card-'+id+' .chdr')?.classList.toggle('closed');}
@@ -633,19 +627,21 @@ function computeSys(sysId,rate,extra,h){
     insMat+=qty*getPrice(it.id,it.c);
     cableM+=qty;
   });
-  // VD tubes / calhas / ISOGRIS
+  // VD tubes / calhas / ISOGRIS (only for systems that use cabling)
   let vdM=0;
-  [...TUBOS_VD,...ISOGRIS].forEach(it=>{
-    const uid=`vd${sysId}-${it.id}`;
-    const qty=parseFloat(document.getElementById('c-'+uid)?.value)||0;if(!qty)return;
-    insMat+=qty*getPrice(uid,it.c);
-    vdM+=qty;
-  });
-  if(vdM>0){
-    instSecs+=vdM*INST.passagem_vd;
-    instSecs+=cableM*INST.enfiamento;
+  if(!sys.noVD){
+    [...TUBOS_VD,...ISOGRIS].forEach(it=>{
+      const uid=`vd${sysId}-${it.id}`;
+      const qty=parseFloat(document.getElementById('c-'+uid)?.value)||0;if(!qty)return;
+      insMat+=qty*getPrice(uid,it.c);
+      vdM+=qty;
+    });
+    if(vdM>0){
+      instSecs+=vdM*INST.passagem_vd;
+      instSecs+=cableM*INST.enfiamento;
+    }
   }
-  // Free-form insumos (unit 'm' counts as cable for enfiamento purposes if hasVD)
+  // Free-form insumos (unit 'm' counts as cable for enfiamento if hasVD)
   getSysInsumos(sysId).forEach(ins=>{
     if(ins.qty)insMat+=ins.qty*ins.price;
     if(vdM>0&&ins.unit==='m'&&ins.qty>0)instSecs+=ins.qty*INST.enfiamento;
