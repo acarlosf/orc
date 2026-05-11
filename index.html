@@ -303,6 +303,7 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
     <div id="eq-ajax"></div>
     <div class="subsec-hdr" onclick="togSub('ins-ajax')">📦 Materiais / Configuração <span id="arr-ins-ajax">▶</span></div>
     <div id="sub-ins-ajax" class="hidden">
+      <div id="cl-ajax"></div>
       <div id="si-rows-ajax"></div>
       <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('ajax')">+ Material</button></div>
     </div>
@@ -392,7 +393,7 @@ const MONT={
   extintor:{lo:10,hi:10},agulheta:{lo:10,hi:10},mola:{lo:40,hi:40},
   seletor:{lo:40,hi:40},fecho_pcf:{lo:30,hi:30},barra:{lo:60,hi:60},
   puxador:{lo:15,hi:15},fita:{lo:1,hi:1},
-  sinal_1face:{lo:10,hi:20},sinal_2faces:{lo:10,hi:20},sinal_excel:{lo:30,hi:30},
+  sinal_1face:{lo:8,hi:12},sinal_2faces:{lo:15,hi:25},sinal_excel:{lo:30,hi:30},
   motor_damper:{lo:45,hi:75},damper:{lo:30,hi:50},modulo_int:{lo:20,hi:20},
   central_gas:{lo:60,hi:60},electrovalv:{lo:30,hi:30},
   ajax_hub:{lo:25,hi:25},ajax_det:{lo:8,hi:10},ajax_siren:{lo:10,hi:15}
@@ -457,11 +458,11 @@ const EQ_CO=[
   {id:'co-sinalizador',name:'Sinalizador Atmosfera Perigosa (CO)',  mk:'sinalizador', inst:{base:0,lig:1,det:0,ensaio:1}, email:'sinalizadores atmosfera perigosa CO'},
 ];
 const EQ_AJAX=[
-  {id:'ajax-hub',       name:'Hub Ajax (Central Sem Fio 2G/4G)',    mk:'ajax_hub',   inst:{base:0,lig:0,det:0,ensaio:1}, email:'hub Ajax central'},
-  {id:'ajax-fireprotect',name:'FireProtect (Fumo + Calor)',          mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect'},
-  {id:'ajax-fireplus',  name:'FireProtect Plus (Fumo+Calor+CO)',     mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect Plus'},
-  {id:'ajax-siren-int', name:'HomeSiren (Sirene Interior Sem Fio)',  mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes HomeSiren'},
-  {id:'ajax-siren-ext', name:'StreetSiren (Sirene Exterior Sem Fio)',mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes StreetSiren'},
+  {id:'ajax-hub',       name:'Ajax Hub Plus (Central EN54 Sem Fio)',    mk:'ajax_hub',   inst:{base:0,lig:0,det:0,ensaio:1}, email:'hub Ajax central'},
+  {id:'ajax-fireprotect',name:'Ajax FireProtect Plus (EN54 Fumo + Calor)',          mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect'},
+  {id:'ajax-fireplus',  name:'Ajax FireProtect Plus CO (EN54 Fumo+Calor+CO)',     mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect Plus'},
+  {id:'ajax-siren-int', name:'Ajax HomeSiren (Sirene EN54 Interior)',  mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes HomeSiren'},
+  {id:'ajax-siren-ext', name:'Ajax StreetSiren Plus (Sirene EN54 Exterior)',mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes StreetSiren'},
 ];
 // Sinais de Emergência (verde) — saídas e vias de evacuação
 const SINAIS_EMERG=[
@@ -500,6 +501,17 @@ const CABOS=[
   {id:'cf2x1',     c:0.40,u:'m',eml:'CABO CF 2x1',                                  sec:'SADI'},
   {id:'cf2x15',    c:0.65,u:'m',eml:'CABO CF 2x1,5',                                sec:'SADI'},
   {id:'utp6',      c:0.39,u:'m',eml:'CABO UTP CAT 6',                               sec:'SADI'},
+  // Desenfumagem
+  {id:'lih-2x15-desf', c:0.70,u:'m',eml:'CABO LIH (st) H FE180 PH120 2x1,5',  sec:'DESFUM'},
+  {id:'cf2x15-desf',   c:0.65,u:'m',eml:'CABO CF 2x1,5',                        sec:'DESFUM'},
+  // Deteção de Gás
+  {id:'blind-2x1-gas', c:0.85,u:'m',eml:'CABO BLINDADO 2x1',                    sec:'GAS'},
+  {id:'fvv2x15-gas',   c:0.56,u:'m',eml:'CABO FVV 2x1,5',                       sec:'GAS'},
+  // Deteção de CO
+  {id:'lih-2x1-co',    c:0.58,u:'m',eml:'CABO LIH (st) H FE180 PH120 2x1',     sec:'CO'},
+  {id:'fvv2x15-co',    c:0.56,u:'m',eml:'CABO FVV 2x1,5',                       sec:'CO'},
+  // Ajax (alimentação Hub)
+  {id:'vv3x15-ajax',   c:0.65,u:'m',eml:'CABO VV 3x1,5 (alimentação Hub Ajax)', sec:'AJAX'},
 ];
 const TUBOS_VD=[
   {id:'vd16',      name:'Tubo VD16 + abraçadeiras',           c:0.30,u:'m'},
@@ -526,10 +538,10 @@ const SYS_LIST=[
   {id:'inc',  emailTag:'SINAL INCÊNDIO', cables:()=>[],                              eqs:()=>[],                                   sigGroup:'inc', noVD:true},
   {id:'ext',  emailTag:'EXTINÇÃO',       cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='EXTINÇÃO'), sigGroup:null,  noVD:true},
   {id:'spv',  emailTag:'SPV',            cables:()=>[],                              eqs:()=>EQ_EXT.filter(e=>e.sec==='SPV'),       sigGroup:null,  noVD:true},
-  {id:'desfum',emailTag:'DESENFUMAGEM', cables:()=>[], eqs:()=>EQ_DESFUM, sigGroup:null, noVD:false},
-  {id:'gas',   emailTag:'DETEÇÃO GÁS',  cables:()=>[], eqs:()=>EQ_GAS,   sigGroup:null, noVD:false},
-  {id:'co',    emailTag:'DETEÇÃO CO',   cables:()=>[], eqs:()=>EQ_CO,    sigGroup:null, noVD:false},
-  {id:'ajax',  emailTag:'AJAX SEM FIO', cables:()=>[], eqs:()=>EQ_AJAX,  sigGroup:null, noVD:true},
+  {id:'desfum',emailTag:'DESENFUMAGEM', cables:()=>CABOS.filter(c=>c.sec==='DESFUM'), eqs:()=>EQ_DESFUM, sigGroup:null, noVD:false},
+  {id:'gas',   emailTag:'DETEÇÃO GÁS',  cables:()=>CABOS.filter(c=>c.sec==='GAS'), eqs:()=>EQ_GAS,   sigGroup:null, noVD:false},
+  {id:'co',    emailTag:'DETEÇÃO CO',   cables:()=>CABOS.filter(c=>c.sec==='CO'), eqs:()=>EQ_CO,    sigGroup:null, noVD:false},
+  {id:'ajax',  emailTag:'AJAX SEM FIO', cables:()=>CABOS.filter(c=>c.sec==='AJAX'), eqs:()=>EQ_AJAX,  sigGroup:null, noVD:true},
 ];
 const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
 
@@ -572,6 +584,10 @@ buildEq('eq-co',     EQ_CO);
 buildEq('eq-ajax',   EQ_AJAX);
 buildLine('cl-sadi',CABOS.filter(c=>c.sec==='SADI'));
 buildLine('cl-saie',CABOS.filter(c=>c.sec==='SAIE'));
+buildLine('cl-desfum',CABOS.filter(c=>c.sec==='DESFUM'));
+buildLine('cl-gas',CABOS.filter(c=>c.sec==='GAS'));
+buildLine('cl-co',CABOS.filter(c=>c.sec==='CO'));
+buildLine('cl-ajax',CABOS.filter(c=>c.sec==='AJAX'));
 function buildSysVD(sysId){
   const all=[...TUBOS_VD,...ISOGRIS];
   const ct=document.getElementById('cl-vd-'+sysId);if(!ct)return;
@@ -643,7 +659,7 @@ function getSn(rid){
   return{s,tp:tp.value,sz:sz?.value||'',qty:parseInt(q?.value)||0};
 }
 function delSn(rid){document.getElementById('sr-'+rid)?.remove();recalc();}
-function snMk(tp){return(tp==='2'||tp==='3')?'sinal_2faces':'sinal_1face';}
+function snMk(tp){return(tp==='2'||tp==='3'||tp==='P')?'sinal_2faces':'sinal_1face';}
 
 // ── Per-system sub-sections ───────────────────────────────────────────────────
 function togSub(id){
