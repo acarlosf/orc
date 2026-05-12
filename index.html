@@ -108,8 +108,15 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .ai-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
 .ai-key-row{display:flex;gap:8px;align-items:center}
 .ai-keyinp{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:monospace;background:var(--white);color:#1a1a2e}
-.ai-textarea{width:100%;min-height:120px;padding:10px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:'Segoe UI',Arial,sans-serif;resize:vertical;background:var(--white);color:#1a1a2e}
+.ai-textarea{width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:'Segoe UI',Arial,sans-serif;resize:vertical;background:var(--white);color:#1a1a2e}
 .ai-textarea:focus,.ai-keyinp:focus{outline:none;border-color:var(--blue2)}
+.ai-pdf-zone{border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--white)}
+.ai-pdf-zone:hover,.ai-pdf-zone.drag{border-color:var(--blue2);background:#eff6ff}
+.ai-pdf-zone.has-file{border-color:#166534;background:#f0fdf4}
+.ai-pdf-lbl{font-size:12.5px;color:var(--grey)}
+.ai-pdf-name{font-size:12px;font-weight:600;color:#166534;margin-top:4px}
+.ai-sep{font-size:11px;color:var(--grey);text-align:center;display:flex;align-items:center;gap:8px}
+.ai-sep::before,.ai-sep::after{content:'';flex:1;height:1px;background:var(--border)}
 .btn-ai{padding:7px 18px;background:#166534;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12.5px;font-weight:600}
 .btn-ai:hover{background:#14532d}
 .btn-ai:disabled{background:#6b7280;cursor:not-allowed}
@@ -117,8 +124,12 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .ai-status.ok{color:#166534;font-style:normal;font-weight:600}
 .ai-status.err{color:#b91c1c;font-style:normal}
 html.dark .ai-keyinp,html.dark .ai-textarea{background:#0f172a;color:#cbd5e1;border-color:#475569}
+html.dark .ai-pdf-zone{background:#1e293b;border-color:#475569}
+html.dark .ai-pdf-zone:hover,html.dark .ai-pdf-zone.drag{background:#172554;border-color:#2563a8}
+html.dark .ai-pdf-zone.has-file{background:#052e16;border-color:#166534}
 html.dark .btn-ai{background:#14532d}
 html.dark .btn-ai:hover{background:#166534}
+html.dark .ai-sep::before,html.dark .ai-sep::after{background:#334155}
 
 /* ── Dark mode ───────────────────────────────────────────────────────────── */
 html.dark{color-scheme:dark}
@@ -450,10 +461,20 @@ html.dark .stbar{background:#1e293b}
         <input class="ai-keyinp" id="ai-key" type="password" placeholder="sk-ant-..." oninput="saveAiKey()">
         <span id="ai-key-status" class="ai-status"></span>
       </div>
-      <div style="font-size:11px;color:var(--grey)">Cole abaixo o texto do relatório gerado pelo técnico. A IA irá identificar os sistemas, equipamentos e quantidades e preencher o orçamento automaticamente.</div>
-      <textarea class="ai-textarea" id="ai-report" placeholder="Cole aqui o relatório de vistoria..."></textarea>
+      <div style="font-size:11px;color:var(--grey)">Carregue o PDF do relatório de vistoria. A IA irá identificar os equipamentos e itens marcados como <strong>KO</strong> e preencher o orçamento automaticamente.</div>
+      <!-- PDF drop zone -->
+      <div class="ai-pdf-zone" id="ai-drop" onclick="document.getElementById('ai-pdf-input').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="aiDropPdf(event)">
+        <input type="file" id="ai-pdf-input" accept="application/pdf" style="display:none" onchange="aiSelectPdf(this)">
+        <div class="ai-pdf-lbl">Clique para selecionar ou arraste o PDF aqui</div>
+        <div class="ai-pdf-name" id="ai-pdf-name" style="display:none"></div>
+      </div>
+      <div class="ai-sep">ou cole texto do relatório</div>
+      <textarea class="ai-textarea" id="ai-report" placeholder="Cole aqui o texto do relatório (alternativa ao PDF)..."></textarea>
       <div class="ai-row">
-        <button class="btn-ai" id="btn-ai-parse" onclick="parseReport()">Gerar Orçamento a partir do Relatório</button>
+        <button class="btn-ai" id="btn-ai-parse" onclick="parseReport()">Analisar e Gerar Orçamento</button>
         <span id="ai-parse-status" class="ai-status"></span>
       </div>
     </div>
@@ -1200,13 +1221,42 @@ function saveAiKey(){
   }
 })();
 
+let aiPdfB64=null;
+
+function aiSelectPdf(input){
+  const file=input.files[0];if(!file)return;
+  aiLoadPdf(file);
+}
+function aiDropPdf(e){
+  e.preventDefault();
+  document.getElementById('ai-drop').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(!file||file.type!=='application/pdf'){
+    document.getElementById('ai-parse-status').textContent='Ficheiro inválido — apenas PDF.';
+    document.getElementById('ai-parse-status').className='ai-status err';return;
+  }
+  aiLoadPdf(file);
+}
+function aiLoadPdf(file){
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    aiPdfB64=ev.target.result.split(',')[1];
+    const nm=document.getElementById('ai-pdf-name');
+    nm.textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';
+    nm.style.display='block';
+    document.getElementById('ai-drop').classList.add('has-file');
+    document.getElementById('ai-parse-status').textContent='';
+  };
+  reader.readAsDataURL(file);
+}
+
 async function parseReport(){
   const key=(document.getElementById('ai-key').value||'').trim();
-  const report=(document.getElementById('ai-report').value||'').trim();
+  const reportText=(document.getElementById('ai-report').value||'').trim();
   const btn=document.getElementById('btn-ai-parse');
   const status=document.getElementById('ai-parse-status');
   if(!key){status.textContent='Introduza a chave API Claude.';status.className='ai-status err';return;}
-  if(!report){status.textContent='Cole o relatório antes de continuar.';status.className='ai-status err';return;}
+  if(!aiPdfB64&&!reportText){status.textContent='Carregue um PDF ou cole o texto do relatório.';status.className='ai-status err';return;}
   btn.disabled=true;
   status.textContent='A analisar relatório...';status.className='ai-status';
 
@@ -1225,12 +1275,26 @@ async function parseReport(){
   const cableLines=cableRef.map(c=>c.id+': '+c.name+' ('+c.u+')').join('\n');
 
   const systemPrompt='És um assistente especializado em sistemas de segurança contra incêndio (SCIE) em Portugal.\n'
-    +'Receberás um relatório de vistoria técnica e deves extrair os equipamentos e materiais, mapeando-os para os IDs da aplicação.\n\n'
+    +'Receberás um relatório de vistoria técnica. O relatório pode ter colunas OK/KO ou semelhantes.\n'
+    +'Identifica APENAS os equipamentos e itens marcados como KO (avariados, a substituir ou a instalar de novo).\n'
+    +'Mapeia-os para os IDs da aplicação e indica a quantidade de cada um.\n'
+    +'Se o relatório indicar metragens de cabo ou materiais a instalar, inclui também.\n\n'
     +'EQUIPAMENTOS (id: nome [sistema]):\n'+eqLines+'\n\n'
     +'CABOS E MATERIAIS (id: nome (unidade)):\n'+cableLines+'\n\n'
     +'CENTRAL DE INCÊNDIO: q-central=quantidade, s-ctipo="end"(endereçável)/"conv"(convencional), s-csub=nº loops/zonas\n\n'
     +'Responde APENAS com JSON válido, sem markdown, sem texto extra:\n'
-    +'{"central":{"qty":0,"tipo":"end","sub":1},"equipamentos":[{"id":"det-fumo","qty":5}],"cabos":[{"id":"lih-2x1","qty":50}],"rate":65,"notas":"observações não mapeadas"}';
+    +'{"central":{"qty":0,"tipo":"end","sub":1},"equipamentos":[{"id":"det-fumo","qty":5}],"cabos":[{"id":"lih-2x1","qty":50}],"rate":65,"notas":"observações ou itens não mapeados"}';
+
+  // Build message content — PDF takes priority over textarea
+  let userContent;
+  if(aiPdfB64){
+    userContent=[
+      {type:'document',source:{type:'base64',media_type:'application/pdf',data:aiPdfB64}},
+      {type:'text',text:'Analisa este relatório de vistoria e gera o orçamento com base nos itens KO encontrados.'}
+    ];
+  }else{
+    userContent=reportText;
+  }
 
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -1242,10 +1306,10 @@ async function parseReport(){
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
+        model:'claude-sonnet-4-6',
         max_tokens:1024,
         system:systemPrompt,
-        messages:[{role:'user',content:report}]
+        messages:[{role:'user',content:userContent}]
       })
     });
     if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.statusText);}
