@@ -101,6 +101,25 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 #toast{display:none;background:#22c55e;color:#fff;padding:3px 10px;border-radius:4px;font-size:12px}
 #eout{padding:16px 20px;font-family:'Courier New',monospace;font-size:13px;line-height:1.8;background:#1e2433;color:#e2e8f0;min-height:240px;white-space:pre-wrap}
 
+
+/* ── AI Report Reader ───────────────────────────────────────────────────── */
+#ai-card{grid-column:span 2}
+.ai-body{padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.ai-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ai-key-row{display:flex;gap:8px;align-items:center}
+.ai-keyinp{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:monospace;background:var(--white);color:#1a1a2e}
+.ai-textarea{width:100%;min-height:120px;padding:10px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:'Segoe UI',Arial,sans-serif;resize:vertical;background:var(--white);color:#1a1a2e}
+.ai-textarea:focus,.ai-keyinp:focus{outline:none;border-color:var(--blue2)}
+.btn-ai{padding:7px 18px;background:#166534;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12.5px;font-weight:600}
+.btn-ai:hover{background:#14532d}
+.btn-ai:disabled{background:#6b7280;cursor:not-allowed}
+.ai-status{font-size:12px;color:var(--grey);font-style:italic}
+.ai-status.ok{color:#166534;font-style:normal;font-weight:600}
+.ai-status.err{color:#b91c1c;font-style:normal}
+html.dark .ai-keyinp,html.dark .ai-textarea{background:#0f172a;color:#cbd5e1;border-color:#475569}
+html.dark .btn-ai{background:#14532d}
+html.dark .btn-ai:hover{background:#166534}
+
 /* ── Dark mode ───────────────────────────────────────────────────────────── */
 html.dark{color-scheme:dark}
 html.dark body{background:#0f172a;color:#cbd5e1}
@@ -415,6 +434,26 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 
 
 </div><!-- /right -->
+
+<!-- AI Report Reader -->
+<div class="card" id="ai-card">
+  <div class="chdr closed" onclick="tog('ai-body')">Leitura de Relatório — Geração Automática de Orçamento <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-ai-body">
+    <div class="ai-body">
+      <div class="ai-key-row">
+        <span style="font-size:12px;color:var(--grey);white-space:nowrap">Chave API Claude:</span>
+        <input class="ai-keyinp" id="ai-key" type="password" placeholder="sk-ant-..." oninput="saveAiKey()">
+        <span id="ai-key-status" class="ai-status"></span>
+      </div>
+      <div style="font-size:11px;color:var(--grey)">Cole abaixo o texto do relatório gerado pelo técnico. A IA irá identificar os sistemas, equipamentos e quantidades e preencher o orçamento automaticamente.</div>
+      <textarea class="ai-textarea" id="ai-report" placeholder="Cole aqui o relatório de vistoria..."></textarea>
+      <div class="ai-row">
+        <button class="btn-ai" id="btn-ai-parse" onclick="parseReport()">Gerar Orçamento a partir do Relatório</button>
+        <span id="ai-parse-status" class="ai-status"></span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Email -->
 <div class="card" id="email-card">
@@ -841,11 +880,13 @@ function compute(){
     sysR[s.id]=r;
     totalMont+=r.montSecs;totalInst+=r.instSecs;totalMat+=r.insMat;
   });
-  const hMont=totalMont/3600,hInst=totalInst/3600,totalH=hMont+hInst;
-  const exec=totalH*rate*(1+extra/100);
-  const vMont=(totalMont/3600)*rate*(1+extra/100);
-  const vInst=(totalInst/3600)*rate*(1+extra/100);
-  return{hMont,hInst,totalH,exec,vMont,vInst,insMat:totalMat,dias:Math.floor(totalH/8),hrem:totalH%8,sysR,rate,extra};
+  const hMontRaw=totalMont/3600,hInstRaw=totalInst/3600;
+  const hMont=ceilH(hMontRaw),hInst=ceilH(hInstRaw),totalH=hMont+hInst;
+  const exec=ceilE(totalH*rate*(1+extra/100));
+  const vMont=ceilE(hMont*rate*(1+extra/100));
+  const vInst=ceilE(hInst*rate*(1+extra/100));
+  const insMat=ceilE(totalMat);
+  return{hMont,hInst,totalH,exec,vMont,vInst,insMat,dias:Math.floor(totalH/8),hrem:totalH%8,sysR,rate,extra};
 }
 
 function recalc(){
@@ -901,14 +942,14 @@ function recalc(){
   });
 
   // Result bar
-  document.getElementById('r-exec').textContent =fmtE(r.exec);
-  document.getElementById('r-hexec').textContent=fmt1(r.totalH)+' h';
-  document.getElementById('r-vm').textContent   =fmtE(r.vMont);
-  document.getElementById('r-hm').textContent   =fmt1(r.hMont)+' h';
-  document.getElementById('r-vi').textContent   =fmtE(r.vInst);
-  document.getElementById('r-hi').textContent   =fmt1(r.hInst)+' h';
-  document.getElementById('r-ins').textContent  =fmtE(r.insMat);
-  document.getElementById('r-tot').textContent  =fmtE(r.exec+r.insMat);
+  document.getElementById('r-exec').textContent =fmtEC(r.exec);
+  document.getElementById('r-hexec').textContent=r.totalH+' h';
+  document.getElementById('r-vm').textContent   =fmtEC(r.vMont);
+  document.getElementById('r-hm').textContent   =r.hMont+' h';
+  document.getElementById('r-vi').textContent   =fmtEC(r.vInst);
+  document.getElementById('r-hi').textContent   =r.hInst+' h';
+  document.getElementById('r-ins').textContent  =fmtEC(r.insMat);
+  document.getElementById('r-tot').textContent  =fmtEC(r.exec+r.insMat);
   const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8*10)/10;
   const dStr=dias>0?`${dias} dia${dias!==1?'s':''}` : '';
   const hStr=hrem>0.05?`${fmt1(hrem)} h`:'';
@@ -986,20 +1027,20 @@ function genEmail(){
     secLines.forEach(l=>lines.push(l));
 
     // Per-system M.O. and Insumos
-    const sysH=(sr.montSecs+sr.instSecs)/3600;
-    const sysMO=sysH*rate*ep;
-    if(sysH>0)  lines.push(`  M.O.: ${fmt1(sysH)}h / ${fmtE(sysMO)}`);
-    if(sr.insMat>0)lines.push(`  Insumos: ${fmtE(sr.insMat)}`);
+    const sysH=ceilH((sr.montSecs+sr.instSecs)/3600);
+    const sysMO=ceilE(sysH*rate*ep);
+    if(sysH>0)  lines.push(`  M.O.: ${sysH}h / ${fmtEC(sysMO)}`);
+    if(sr.insMat>0)lines.push(`  Insumos: ${fmtEC(sr.insMat)}`);
     lines.push('');
   });
 
   if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
-  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${fmt1(r.totalH)}h / ${fmtE(r.exec)}`);
-  lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtE(r.insMat)}`);
-  lines.push(`Total Geral --------- ${fmtE(r.exec+r.insMat)}`);
-  const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8);
+  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}`);
+  lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtEC(r.insMat)}`);
+  lines.push(`Total Geral --------- ${fmtEC(r.exec+r.insMat)}`);
+  const dias=Math.floor(r.totalH/8),hrem=r.totalH%8;
   if(dias>0||hrem>0){
     lines.push('');
     const dStr=dias>0?`${dias} Dia${dias!==1?'s':''}` : '';
@@ -1093,6 +1134,9 @@ function resetAll(){
 }
 
 function pad(n){return String(n).padStart(2,'0');}
+function ceilH(v){return Math.ceil(v||0);}
+function ceilE(v){return Math.ceil(v||0);}
+function fmtEC(v){return ceilE(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';}
 function fmtE(v){return(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';}
 function fmt1(v){return(v||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1});}
 
@@ -1106,6 +1150,114 @@ function toggleDark(){
   localStorage.setItem('darkMode',dark?'1':'0');
 }
 if(document.documentElement.classList.contains('dark'))document.getElementById('btn-dark').textContent='☀️';
+
+
+
+// ── AI Report Reader ──────────────────────────────────────────────────────────
+function saveAiKey(){
+  const k=document.getElementById('ai-key').value.trim();
+  localStorage.setItem('ai-key',k);
+  const st=document.getElementById('ai-key-status');
+  st.textContent=k?'Guardada':'';
+  st.className='ai-status'+(k?' ok':'');
+}
+(function(){
+  const k=localStorage.getItem('ai-key')||'';
+  if(k){
+    document.getElementById('ai-key').value=k;
+    const st=document.getElementById('ai-key-status');
+    st.textContent='Guardada';st.className='ai-status ok';
+  }
+})();
+
+async function parseReport(){
+  const key=(document.getElementById('ai-key').value||'').trim();
+  const report=(document.getElementById('ai-report').value||'').trim();
+  const btn=document.getElementById('btn-ai-parse');
+  const status=document.getElementById('ai-parse-status');
+  if(!key){status.textContent='Introduza a chave API Claude.';status.className='ai-status err';return;}
+  if(!report){status.textContent='Cole o relatório antes de continuar.';status.className='ai-status err';return;}
+  btn.disabled=true;
+  status.textContent='A analisar relatório...';status.className='ai-status';
+
+  const allEq=[
+    ...EQ_SADI.map(e=>({id:e.id,name:e.name,sys:'SADI'})),
+    ...EQ_SAIE.map(e=>({id:e.id,name:e.name,sys:'SAIE'})),
+    ...EQ_EXT.map(e=>({id:e.id,name:e.name,sys:e.sec})),
+    ...EQ_DESFUM.map(e=>({id:e.id,name:e.name,sys:'DESENFUMAGEM'})),
+    ...EQ_GAS.map(e=>({id:e.id,name:e.name,sys:'GAS'})),
+    ...EQ_CO.map(e=>({id:e.id,name:e.name,sys:'CO'})),
+    ...EQ_AJAX.map(e=>({id:e.id,name:e.name,sys:'AJAX'})),
+  ];
+  const cableRef=[...CABOS,...TUBOS_VD,...ISOGRIS].map(c=>({id:c.id,name:c.eml||c.name,u:c.u}));
+
+  const eqLines=allEq.map(e=>e.id+': '+e.name+' ['+e.sys+']').join('\n');
+  const cableLines=cableRef.map(c=>c.id+': '+c.name+' ('+c.u+')').join('\n');
+
+  const systemPrompt='És um assistente especializado em sistemas de segurança contra incêndio (SCIE) em Portugal.\n'
+    +'Receberás um relatório de vistoria técnica e deves extrair os equipamentos e materiais, mapeando-os para os IDs da aplicação.\n\n'
+    +'EQUIPAMENTOS (id: nome [sistema]):\n'+eqLines+'\n\n'
+    +'CABOS E MATERIAIS (id: nome (unidade)):\n'+cableLines+'\n\n'
+    +'CENTRAL DE INCÊNDIO: q-central=quantidade, s-ctipo="end"(endereçável)/"conv"(convencional), s-csub=nº loops/zonas\n\n'
+    +'Responde APENAS com JSON válido, sem markdown, sem texto extra:\n'
+    +'{"central":{"qty":0,"tipo":"end","sub":1},"equipamentos":[{"id":"det-fumo","qty":5}],"cabos":[{"id":"lih-2x1","qty":50}],"rate":65,"notas":"observações não mapeadas"}';
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1024,
+        system:systemPrompt,
+        messages:[{role:'user',content:report}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.statusText);}
+    const data=await resp.json();
+    const raw=data.content[0].text.trim().replace(/^```[a-z]*\n?|\n?```$/g,'').trim();
+    const json=JSON.parse(raw);
+    applyAiResult(json,status);
+  }catch(e){
+    status.textContent='Erro: '+e.message;status.className='ai-status err';
+  }finally{btn.disabled=false;}
+}
+
+function applyAiResult(json,status){
+  document.querySelectorAll('.qinp,.cinp').forEach(i=>i.value=0);
+  document.querySelectorAll('.item.on,.cline.on').forEach(r=>r.classList.remove('on'));
+  if(json.central){
+    const c=json.central;
+    if(c.qty>0){const el=document.getElementById('q-central');if(el)el.value=c.qty;}
+    if(c.tipo){const el=document.getElementById('s-ctipo');if(el){el.value=c.tipo;updCLbl();}}
+    if(c.sub){const el=document.getElementById('s-csub');if(el)el.value=c.sub;}
+  }
+  (json.equipamentos||[]).forEach(function(item){
+    const el=document.getElementById('q-'+item.id);
+    if(el){el.value=item.qty;sync(item.id);}
+  });
+  (json.cabos||[]).forEach(function(item){
+    const el=document.getElementById('c-'+item.id);
+    if(el){el.value=item.qty;syncC(item.id);}
+  });
+  if(json.rate){const el=document.getElementById('i-rate');if(el)el.value=json.rate;}
+  recalc();
+  ['cent','sadi','saie','ext','spv','desfum','gas','co','ajax','sinais-emerg','sinais-inc'].forEach(function(id){
+    const body=document.getElementById('body-'+id);
+    if(body&&body.classList.contains('hidden')&&body.querySelectorAll('.on').length>0)tog(id);
+  });
+  if(parseInt(document.getElementById('q-central').value)>0){
+    const b=document.getElementById('body-cent');
+    if(b&&b.classList.contains('hidden'))tog('cent');
+  }
+  const msg='Orçamento preenchido.'+(json.notas?' Notas: '+json.notas:'');
+  status.textContent=msg;status.className='ai-status ok';
+}
 
 loadState();recalc();
 </script>
