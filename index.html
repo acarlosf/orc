@@ -1276,7 +1276,7 @@ async function parseReport(){
 
   const systemPrompt='És um assistente especializado em sistemas de segurança contra incêndio (SCIE) em Portugal.\n'
     +'Receberás um relatório de vistoria técnica. O relatório pode ter colunas OK/KO ou semelhantes.\n'
-    +'Identifica APENAS os equipamentos e itens marcados como KO (avariados, a substituir ou a instalar de novo).\n'
+    +'Identifica APENAS os equipamentos e itens marcados como KO ou NKO (avariados, a substituir ou a instalar de novo).\n'
     +'Mapeia-os para os IDs da aplicação e indica a quantidade de cada um.\n'
     +'Se o relatório indicar metragens de cabo ou materiais a instalar, inclui também.\n\n'
     +'EQUIPAMENTOS (id: nome [sistema]):\n'+eqLines+'\n\n'
