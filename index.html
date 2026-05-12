@@ -1275,10 +1275,12 @@ async function parseReport(){
   const cableLines=cableRef.map(c=>c.id+': '+c.name+' ('+c.u+')').join('\n');
 
   const systemPrompt='És um assistente especializado em sistemas de segurança contra incêndio (SCIE) em Portugal.\n'
-    +'Receberás um relatório de vistoria técnica. O relatório pode ter colunas OK/KO ou semelhantes.\n'
-    +'Identifica APENAS os equipamentos e itens marcados como KO ou NKO (avariados, a substituir ou a instalar de novo).\n'
-    +'Mapeia-os para os IDs da aplicação e indica a quantidade de cada um.\n'
-    +'Se o relatório indicar metragens de cabo ou materiais a instalar, inclui também.\n\n'
+    +'Receberás um relatório de vistoria técnica. O relatório pode ter colunas OK/KO/NKO ou semelhantes.\n'
+    +'REGRA FUNDAMENTAL: qualquer item com estado KO ou NKO gera trabalho (mão de obra) e DEVE ser incluído no orçamento.\n'
+    +'Não excluas itens NKO só porque "não implica substituição" — repositionamento, sinalização e correção de não-conformidades são trabalho faturável.\n'
+    +'Para cada item KO/NKO: mapeia para o ID de equipamento mais próximo e usa a quantidade indicada (ou conta as referências individuais).\n'
+    +'Se o relatório indicar metragens de cabo ou materiais a instalar, inclui também.\n'
+    +'Coloca em "notas" apenas o que for impossível mapear para qualquer ID disponível.\n\n'
     +'EQUIPAMENTOS (id: nome [sistema]):\n'+eqLines+'\n\n'
     +'CABOS E MATERIAIS (id: nome (unidade)):\n'+cableLines+'\n\n'
     +'CENTRAL DE INCÊNDIO: q-central=quantidade, s-ctipo="end"(endereçável)/"conv"(convencional), s-csub=nº loops/zonas\n\n'
