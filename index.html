@@ -103,7 +103,7 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 
 
 /* ── AI Report Reader ───────────────────────────────────────────────────── */
-#ai-card{grid-column:span 2}
+#card-ai{grid-column:span 2}
 .ai-body{padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .ai-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
 .ai-key-row{display:flex;gap:8px;align-items:center}
@@ -164,6 +164,11 @@ html.dark .sublbl{color:#94a3b8}
 html.dark .sub-num{background:#0f172a;color:#cbd5e1;border-color:#475569}
 html.dark .footer-credits{border-color:#1e293b;color:#475569}
 html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
+html.dark .hbar{background:#0f172a;border-color:#334155}
+html.dark .cfg{background:#0f172a;border-color:#334155}
+html.dark .cblock{background:#1e293b;border-color:#334155}
+html.dark .warn-box{background:#1c1200;border-color:#854d0e;color:#fbbf24}
+html.dark .stbar{background:#1e293b}
 </style>
 </head>
 <body>
@@ -436,9 +441,9 @@ html.dark #btn-dark{background:#1e293b;border-color:#334155;color:#fbbf24}
 </div><!-- /right -->
 
 <!-- AI Report Reader -->
-<div class="card" id="ai-card">
-  <div class="chdr closed" onclick="tog('ai-body')">Leitura de Relatório — Geração Automática de Orçamento <span class="chev">▼</span></div>
-  <div class="cbody hidden" id="body-ai-body">
+<div class="card" id="card-ai">
+  <div class="chdr closed" onclick="tog('ai')">Leitura de Relatório — Geração Automática de Orçamento <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-ai">
     <div class="ai-body">
       <div class="ai-key-row">
         <span style="font-size:12px;color:var(--grey);white-space:nowrap">Chave API Claude:</span>
@@ -1089,6 +1094,18 @@ function snapshotState(){
     };
   });
   s._sys=sysData;
+  // Save signal rows (emerg + inc)
+  const snRows=[];
+  document.querySelectorAll('#sb-emerg tr,#sb-inc tr').forEach(function(tr){
+    const rid=tr.id.replace('sr-','');
+    const l=document.getElementById('ss-l-'+rid);
+    const t=document.getElementById('ss-t-'+rid);
+    const sz=document.getElementById('ss-s-'+rid);
+    const q=document.getElementById('ss-q-'+rid);
+    if(!l)return;
+    snRows.push({grupo:tr.dataset.grupo,l:l.value,t:t?t.value:'1',sz:sz?sz.value:'',q:q?q.value:'1'});
+  });
+  s._snRows=snRows;
   return s;
 }
 function loadState(){
@@ -1113,6 +1130,19 @@ function loadState(){
     }
     document.querySelectorAll('.qinp').forEach(el=>{const id=el.id.replace('q-','');sync(id);});
     document.querySelectorAll('.cinp').forEach(el=>{const id=el.id.replace('c-','');syncC(id);});
+    // Restore signal rows
+    (s._snRows||[]).forEach(function(row){
+      addSinal(row.grupo);
+      const rid=snId;
+      const lEl=document.getElementById('ss-l-'+rid);
+      if(lEl){lEl.value=row.l;updSn(rid);}
+      const tEl=document.getElementById('ss-t-'+rid);
+      if(tEl&&row.t){tEl.value=row.t;updSnSz(rid);}
+      const szEl=document.getElementById('ss-s-'+rid);
+      if(szEl&&row.sz)szEl.value=row.sz;
+      const qEl=document.getElementById('ss-q-'+rid);
+      if(qEl)qEl.value=row.q||'1';
+    });
   }catch(e){}
 }
 
