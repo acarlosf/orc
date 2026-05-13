@@ -1063,15 +1063,18 @@ function genEmail(){
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
   const tot=r.exec+r.insMat;
-  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}  →  ${fmtC10(r.exec)}`);
+  // Dias arredondados para cima — custo cliente baseado em dias completos
+  const daysUp=Math.ceil(r.totalH/8);
+  const billH=daysUp*8;
+  const ep=1+(r.extra||0)/100;
+  const execBill=ceil10(billH*r.rate*ep);
+  const totBill=ceil10(billH*r.rate*ep+r.insMat);
+  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}  →  ${fmtC10(execBill)}`);
   lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtEC(r.insMat)}  →  ${fmtC10(r.insMat)}`);
-  lines.push(`Total Geral --------- ${fmtEC(tot)}  →  ${fmtC10(tot)}`);
-  const dias=Math.floor(r.totalH/8),hrem=r.totalH%8;
-  if(dias>0||hrem>0){
+  lines.push(`Total Geral --------- ${fmtEC(tot)}  →  ${fmtC10(totBill)}`);
+  if(daysUp>0){
     lines.push('');
-    const dStr=dias>0?`${dias} Dia${dias!==1?'s':''}` : '';
-    const hStr=hrem>0?`${hrem} hora${hrem!==1?'s':''}` : '';
-    lines.push(`${[dStr,hStr].filter(Boolean).join(' e ')}, 2 técnicos.`);
+    lines.push(`${daysUp} Dia${daysUp!==1?'s':''}, 2 técnicos.`);
   }
   renderEmail(lines,false);
 }
