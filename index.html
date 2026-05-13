@@ -870,7 +870,7 @@ function computeSys(sysId,rate,extra,h){
     insMat+=qty*getPrice(it.id,it.c);
     cableM+=qty;
   });
-  // VD tubes / calhas / ISOGRIS (only for systems that use cabling)
+  // VD tubes / calhas / ISOGRIS — passagem apenas (enfiamento desacoplado)
   let vdM=0;
   if(!sys.noVD){
     [...TUBOS_VD,...ISOGRIS].forEach(it=>{
@@ -879,15 +879,14 @@ function computeSys(sysId,rate,extra,h){
       insMat+=qty*getPrice(uid,it.c);
       vdM+=qty;
     });
-    if(vdM>0){
-      instSecs+=vdM*INST.passagem_vd;
-      instSecs+=cableM*INST.enfiamento;
-    }
+    if(vdM>0) instSecs+=vdM*INST.passagem_vd;
   }
-  // Free-form insumos (unit 'm' counts as cable for enfiamento if hasVD)
+  // Enfiamento: sempre que há metros de cabo (preset ou insumo livre)
+  if(cableM>0) instSecs+=cableM*INST.enfiamento;
+  // Free-form insumos (unit 'm' sempre gera enfiamento)
   getSysInsumos(sysId).forEach(ins=>{
     if(ins.qty)insMat+=ins.qty*ins.price;
-    if(vdM>0&&ins.unit==='m'&&ins.qty>0)instSecs+=ins.qty*INST.enfiamento;
+    if(ins.unit==='m'&&ins.qty>0)instSecs+=ins.qty*INST.enfiamento;
   });
   // Extras
   getSysExtras(sysId).forEach(ex=>{if(!ex.qty)return;montSecs+=ex.qty*ex.time*60;if(ex.price>0)insMat+=ex.qty*ex.price;});
