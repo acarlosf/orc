@@ -56,6 +56,11 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .qbtn:hover{background:var(--accent)}
 .qinp{width:52px;padding:3px 5px;border:1px solid var(--border);border-radius:4px;text-align:center;font-size:13px;font-weight:600}
 .qinp:focus{outline:none;border-color:var(--blue2)}
+.qhi-wrap{display:flex;align-items:center;gap:3px;margin-left:4px}
+.qhi-lbl{font-size:9px;color:#b45309;white-space:nowrap;font-weight:600}
+.qinp-hi{width:38px;padding:2px 4px;border:1px solid #fca5a5;border-radius:4px;text-align:center;font-size:11px;color:#b91c1c;background:#fff5f5}
+.qinp-hi:focus{outline:none;border-color:#b91c1c}
+html.dark .qinp-hi{background:#3f0a0a;color:#fca5a5;border-color:#991b1b}
 .ival{font-size:11px;color:var(--green);font-weight:600;min-width:54px;text-align:right}
 .stbar{padding:8px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
 .btn-add{padding:5px 12px;background:var(--blue2);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500}
@@ -212,9 +217,10 @@ html.dark .stbar{background:#1e293b}
   </div>
   <div class="hbar">
     <strong style="font-size:12px">Altura:</strong>
-    <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="lo" checked onchange="recalc()"><span class="htag">≤ 3 m</span> Normal</label>
-    <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="hi" onchange="recalc()"><span class="htag hi">&gt; 3 m</span> Alta</label>
-    <span style="font-size:11px;color:var(--grey);margin-left:auto">Afecta: detetores, botoneiras, sirenes, ilum. emerg., sinais 1 face</span>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="lo" checked onchange="recalc()"><span class="htag">≤ 3 m</span></label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="hi" onchange="recalc()"><span class="htag hi">&gt; 3 m</span></label>
+    <span style="font-size:11px;color:var(--grey);margin-left:4px">Sinais</span>
+    <span style="font-size:11px;color:var(--grey);margin-left:auto">Equipamentos: use o campo <span style="color:#b91c1c;font-weight:600">&gt;3m</span> em cada item</span>
   </div>
   <div class="infobox"><b>Execução</b> = M.O. montagem + M.O. instalação (bases, lig., enfiamento, ensaios) × (1 + extra%) &nbsp;|&nbsp; <b>Insumos</b> = custo material (cabo, tubo, calha)</div>
 </div>
@@ -662,15 +668,20 @@ const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
 function buildEq(cid,items){
   const ct=document.getElementById(cid);
   items.forEach(it=>{
-    const m=MONT[it.mk],tag=m.lo===m.hi?`${m.lo} min/un`:`≤3m:${m.lo}/hi:${m.hi} min`;
+    const m=MONT[it.mk];
+    const hasHi=m.lo!==m.hi;
+    const tag=hasHi?`≤3m:${m.lo} / >3m:${m.hi} min`:`${m.lo} min/un`;
     const d=document.createElement('div');
     d.className='item'+(it.addrOnly?' addr-only':'');d.id='row-'+it.id;
     if(it.addrOnly)d.style.display='none';
+    const hiField=hasHi
+      ?`<div class="qhi-wrap"><span class="qhi-lbl">&gt;3m:</span><input class="qinp-hi" id="qhi-${it.id}" type="number" value="0" min="0" step="1" oninput="sync('${it.id}')"></div>`
+      :'';
     d.innerHTML=`<div class="iname">${it.name}</div><div class="itag">${tag}</div>
       <div class="qwrap"><button class="qbtn" onclick="adj('${it.id}',-1)">−</button>
       <input class="qinp" id="q-${it.id}" type="number" value="0" min="0" step="1" oninput="sync('${it.id}')">
       <button class="qbtn" onclick="adj('${it.id}',1)">+</button></div>
-      <div class="ival" id="v-${it.id}">—</div>`;
+      ${hiField}<div class="ival" id="v-${it.id}">—</div>`;
     ct.appendChild(d);
   });
 }
@@ -842,8 +853,15 @@ function computeSys(sysId,rate,extra,h){
   // Equipment
   sys.eqs().forEach(it=>{
     const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;if(!qty)return;
-    const m=MONT[it.mk],mT=(it.fhi||h==='hi')?m.hi:m.lo;
-    montSecs+=qty*mT*60;
+    const m=MONT[it.mk];
+    let montT;
+    if(m.lo!==m.hi){
+      const qhi=Math.min(qty,parseFloat(document.getElementById('qhi-'+it.id)?.value)||0);
+      montT=(qty-qhi)*m.lo*60+qhi*m.hi*60;
+    }else{
+      montT=qty*m.lo*60;
+    }
+    montSecs+=montT;
     if(it.inst.base)   instSecs+=qty*INST.fixacao_bases;
     if(it.inst.lig)    instSecs+=qty*INST.ligacoes;
     if(it.inst.det)    instSecs+=qty*INST.colocacao_det;
@@ -926,7 +944,17 @@ function recalc(){
     const row=document.getElementById('row-'+it.id);
     const vEl=document.getElementById('v-'+it.id);
     row?.classList.toggle('on',qty>0);
-    if(vEl)vEl.textContent=qty>0?fmtE(qty*(MONT[it.mk][(it.fhi||h==='hi')?'hi':'lo'])/60*rate):'—';
+    if(vEl){
+      const m=MONT[it.mk];
+      let moMins;
+      if(m.lo!==m.hi){
+        const qhi=Math.min(qty,parseFloat(document.getElementById('qhi-'+it.id)?.value)||0);
+        moMins=(qty-qhi)*m.lo+qhi*m.hi;
+      }else{
+        moMins=qty*m.lo;
+      }
+      vEl.textContent=qty>0?fmtE(moMins/60*rate):'—';
+    }
   });
   document.querySelectorAll('#sb-emerg tr,#sb-inc tr').forEach(tr=>{
     const rid=tr.id.replace('sr-','');
@@ -1108,7 +1136,7 @@ function cpEmail(){
 // ── localStorage ──────────────────────────────────────────────────────────────
 function snapshotState(){
   const s={};
-  document.querySelectorAll('.qinp,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
+  document.querySelectorAll('.qinp,.qinp-hi,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
   document.querySelectorAll('.pinp').forEach(el=>{s[el.id]=el.value;});
   ['q-central','s-ctipo','s-csub','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
   s.alt=getH();
@@ -1155,7 +1183,7 @@ function loadState(){
         });
       });
     }
-    document.querySelectorAll('.qinp').forEach(el=>{const id=el.id.replace('q-','');sync(id);});
+    document.querySelectorAll('.qinp,.qinp-hi').forEach(el=>{const id=el.id.replace(/^qhi?-/,'');sync(id);});
     document.querySelectorAll('.cinp').forEach(el=>{const id=el.id.replace('c-','');syncC(id);});
     // Restore signal rows
     (s._snRows||[]).forEach(function(row){
@@ -1175,8 +1203,7 @@ function loadState(){
 
 function resetAll(){
   localStorage.removeItem('sg5');
-  document.querySelectorAll('.qinp').forEach(i=>i.value=0);
-  document.querySelectorAll('.cinp').forEach(i=>i.value=0);
+  document.querySelectorAll('.qinp,.qinp-hi,.cinp').forEach(i=>i.value=0);
   ['q-central','i-extra'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=0;});
   document.querySelector('input[name="alt"][value="lo"]').checked=true;
   document.getElementById('sb-emerg').innerHTML='';document.getElementById('sb-inc').innerHTML='';
@@ -1334,7 +1361,7 @@ async function parseReport(){
 }
 
 function applyAiResult(json,status){
-  document.querySelectorAll('.qinp,.cinp').forEach(i=>i.value=0);
+  document.querySelectorAll('.qinp,.qinp-hi,.cinp').forEach(i=>i.value=0);
   document.querySelectorAll('.item.on,.cline.on').forEach(r=>r.classList.remove('on'));
   if(json.central){
     const c=json.central;
