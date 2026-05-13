@@ -1062,9 +1062,10 @@ function genEmail(){
   if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
-  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}`);
-  lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtEC(r.insMat)}`);
-  lines.push(`Total Geral --------- ${fmtEC(r.exec+r.insMat)}`);
+  const tot=r.exec+r.insMat;
+  lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}  →  ${fmtC10(r.exec)}`);
+  lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtEC(r.insMat)}  →  ${fmtC10(r.insMat)}`);
+  lines.push(`Total Geral --------- ${fmtEC(tot)}  →  ${fmtC10(tot)}`);
   const dias=Math.floor(r.totalH/8),hrem=r.totalH%8;
   if(dias>0||hrem>0){
     lines.push('');
@@ -1187,6 +1188,8 @@ function pad(n){return String(n).padStart(2,'0');}
 function ceilH(v){return Math.ceil(v||0);}
 function ceilE(v){return Math.ceil(v||0);}
 function fmtEC(v){return ceilE(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';}
+function ceil10(v){return Math.ceil((v||0)/10)*10;}
+function fmtC10(v){return ceil10(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';}
 function fmtE(v){return(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';}
 function fmt1(v){return(v||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1});}
 
