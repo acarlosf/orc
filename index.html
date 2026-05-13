@@ -1066,7 +1066,6 @@ function genEmail(){
   // Dias arredondados para cima — custo cliente baseado em dias completos
   const daysUp=Math.ceil(r.totalH/8);
   const billH=daysUp*8;
-  const ep=1+(r.extra||0)/100;
   const execBill=ceil10(billH*r.rate*ep);
   const totBill=ceil10(billH*r.rate*ep+r.insMat);
   lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}  →  ${fmtC10(execBill)}`);
