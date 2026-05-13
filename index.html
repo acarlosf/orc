@@ -318,7 +318,7 @@ html.dark .stbar{background:#1e293b}
 </div>
 
 <div class="card" id="card-desfum">
-  <div class="chdr closed" onclick="tog('desfum')" style="background:#1a3a5c">Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
+  <div class="chdr closed" onclick="tog('desfum')">Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-desfum">
     <div id="eq-desfum"></div>
     <div class="subsec-hdr" onclick="togSub('ins-desfum')">Cabos e Insumos <span id="arr-ins-desfum">▶</span></div>
@@ -338,7 +338,7 @@ html.dark .stbar{background:#1e293b}
 </div>
 
 <div class="card" id="card-gas">
-  <div class="chdr closed" onclick="tog('gas')" style="background:#4a3000">Deteção de Gás — Natural e Butano/Propano <span class="chev">▼</span></div>
+  <div class="chdr closed" onclick="tog('gas')">Deteção de Gás — Natural e Butano/Propano <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-gas">
     <div id="eq-gas"></div>
     <div class="subsec-hdr" onclick="togSub('ins-gas')">Cabos e Insumos <span id="arr-ins-gas">▶</span></div>
@@ -358,7 +358,7 @@ html.dark .stbar{background:#1e293b}
 </div>
 
 <div class="card" id="card-co">
-  <div class="chdr closed" onclick="tog('co')" style="background:#1a2a4a">Deteção de CO — Monóxido de Carbono <span class="chev">▼</span></div>
+  <div class="chdr closed" onclick="tog('co')">Deteção de CO — Monóxido de Carbono <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-co">
     <div id="eq-co"></div>
     <div class="subsec-hdr" onclick="togSub('ins-co')">Cabos e Insumos <span id="arr-ins-co">▶</span></div>
@@ -378,7 +378,7 @@ html.dark .stbar{background:#1e293b}
 </div>
 
 <div class="card" id="card-ajax">
-  <div class="chdr closed" onclick="tog('ajax')" style="background:#1a1a3a">Ajax — Sistema Sem Fio <span class="chev">▼</span></div>
+  <div class="chdr closed" onclick="tog('ajax')">Ajax — Sistema Sem Fio <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-ajax">
     <div id="eq-ajax"></div>
     <div class="subsec-hdr" onclick="togSub('ins-ajax')">Materiais / Configuração <span id="arr-ins-ajax">▶</span></div>
@@ -1063,17 +1063,21 @@ function genEmail(){
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
   const tot=r.exec+r.insMat;
-  // Dias arredondados para cima — custo cliente baseado em dias completos
-  const daysUp=Math.ceil(r.totalH/8);
-  const billH=daysUp*8;
+  // Arredondamento a meios dias (blocos de 4h): 1-4h=meio dia, 5-8h=1 dia, etc.
+  const halfDays=Math.ceil(r.totalH/4);
+  const billH=halfDays*4;
   const execBill=ceil10(billH*r.rate*ep);
   const totBill=ceil10(billH*r.rate*ep+r.insMat);
   lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}  →  ${fmtC10(execBill)}`);
   lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtEC(r.insMat)}  →  ${fmtC10(r.insMat)}`);
   lines.push(`Total Geral --------- ${fmtEC(tot)}  →  ${fmtC10(totBill)}`);
-  if(daysUp>0){
+  if(halfDays>0){
+    const fullDays=Math.floor(halfDays/2);
+    const hasHalf=halfDays%2===1;
+    const dStr=fullDays>0?`${fullDays} Dia${fullDays!==1?'s':''}` : '';
+    const hStr=hasHalf?(fullDays>0?' e ':'')+'Meio Dia' : '';
     lines.push('');
-    lines.push(`${daysUp} Dia${daysUp!==1?'s':''}, 2 técnicos.`);
+    lines.push(`${dStr}${hStr}, 2 técnicos.`);
   }
   renderEmail(lines,false);
 }
