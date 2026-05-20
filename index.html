@@ -97,6 +97,13 @@ html.dark .qinp-hi{background:#3f0a0a;color:#fca5a5;border-color:#991b1b}
 .footer-credits{text-align:center;padding:18px 14px 24px;font-size:11px;color:#64748b;border-top:1px solid #1e293b;margin-top:4px}
 .xlbl{font-size:10px;color:var(--grey);white-space:nowrap}
 .warn-box{padding:6px 14px;background:#fffbeb;font-size:11px;color:#92400e;border-bottom:1px solid #fef3c7}
+.warn-andaime{display:none;padding:8px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;font-size:12px;color:#b91c1c;font-weight:600;align-items:center;gap:8px;margin:0 14px 10px}
+.andaime-row{padding:10px 14px;background:#f8fafc;border-top:1px solid var(--border);display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.andaime-row label{font-size:10.5px;color:var(--grey);font-weight:500;display:block;margin-bottom:3px}
+.andaime-row select,.andaime-row input[type=number]{padding:5px 7px;border:1px solid var(--border);border-radius:4px;font-size:12.5px}
+html.dark .warn-andaime{background:#3f0a0a;border-color:#991b1b;color:#fca5a5}
+html.dark .andaime-row{background:#0f172a;border-color:#334155}
+html.dark .andaime-row select,html.dark .andaime-row input[type=number]{background:#0f172a;color:#cbd5e1;border-color:#475569}
 #email-card{grid-column:span 2}
 .etbar{padding:10px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn-gen{padding:7px 16px;background:var(--blue2);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12.5px;font-weight:600}
@@ -221,6 +228,25 @@ html.dark .stbar{background:#1e293b}
     <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="alt" value="hi" onchange="recalc()"><span class="htag hi">&gt; 3 m</span></label>
     <span style="font-size:11px;color:var(--grey);margin-left:4px">Sinais</span>
     <span style="font-size:11px;color:var(--grey);margin-left:auto">Equipamentos: use o campo <span style="color:#b91c1c;font-weight:600">&gt;3m</span> em cada item</span>
+  </div>
+  <div class="warn-andaime" id="warn-andaime">⚠ Há equipamentos acima de 3 m — verifique necessidade de andaime ou plataforma elevatória!</div>
+  <div class="andaime-row">
+    <div style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="chk-andaime" onchange="recalc()" style="width:16px;height:16px;cursor:pointer">
+      <label for="chk-andaime" style="font-size:12px;font-weight:600;color:var(--grey);cursor:pointer;margin:0">Andaime / Plataforma elevatória</label>
+    </div>
+    <div id="andaime-fields" style="display:none;display:none;gap:12px;align-items:flex-end;flex-wrap:wrap">
+      <div><label>Tipo</label>
+        <select id="andaime-tipo" onchange="recalc()">
+          <option value="Andaime">Andaime</option>
+          <option value="Plataforma Elevatória">Plataforma Elevatória</option>
+          <option value="Lança Telescópica">Lança Telescópica</option>
+        </select>
+      </div>
+      <div><label>Dias</label><input type="number" id="andaime-dias" value="1" min="1" step="0.5" style="width:65px" oninput="recalc()"></div>
+      <div><label>€/dia</label><input type="number" id="andaime-custo" value="150" min="0" step="10" style="width:80px" oninput="recalc()"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--green)" id="andaime-val">—</div>
+    </div>
   </div>
   <div class="infobox"><b>Execução</b> = M.O. montagem + M.O. instalação (bases, lig., enfiamento, ensaios) × (1 + extra%) &nbsp;|&nbsp; <b>Insumos</b> = custo material (cabo, tubo, calha)</div>
 </div>
@@ -995,6 +1021,8 @@ function recalc(){
   });
 
   // Result bar
+  updAndaime();
+  const scaf=andaimeCost();
   document.getElementById('r-exec').textContent =fmtEC(r.exec);
   document.getElementById('r-hexec').textContent=r.totalH+' h';
   document.getElementById('r-vm').textContent   =fmtEC(r.vMont);
@@ -1002,7 +1030,7 @@ function recalc(){
   document.getElementById('r-vi').textContent   =fmtEC(r.vInst);
   document.getElementById('r-hi').textContent   =r.hInst+' h';
   document.getElementById('r-ins').textContent  =fmtEC(r.insMat);
-  document.getElementById('r-tot').textContent  =fmtEC(r.exec+r.insMat);
+  document.getElementById('r-tot').textContent  =fmtEC(r.exec+r.insMat+scaf);
   const dias=Math.floor(r.totalH/8),hrem=Math.round(r.totalH%8*10)/10;
   const dStr=dias>0?`${dias} dia${dias!==1?'s':''}` : '';
   const hStr=hrem>0.05?`${fmt1(hrem)} h`:'';
@@ -1090,14 +1118,18 @@ function genEmail(){
   if(!r.exec&&!r.insMat){renderEmail(['← Preencha equipamentos ou materiais'],true);return;}
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   lines.push('');
-  const tot=r.exec+r.insMat;
+  const scaf=andaimeCost();
+  const scafTipo=document.getElementById('andaime-tipo')?.value||'Andaime';
+  const scafDias=parseFloat(document.getElementById('andaime-dias')?.value)||1;
+  const tot=r.exec+r.insMat+scaf;
   // Arredondamento a meios dias (blocos de 4h): 1-4h=meio dia, 5-8h=1 dia, etc.
   const halfDays=Math.ceil(r.totalH/4);
   const billH=halfDays*4;
   const execBill=ceil10(billH*r.rate*ep);
-  const totBill=ceil10(billH*r.rate*ep+r.insMat);
+  const totBill=ceil10(billH*r.rate*ep+r.insMat+scaf);
   lines.push(`Mão de Obra (Montagem + Instalação) --------- ${r.totalH}h / ${fmtEC(r.exec)}  →  ${fmtC10(execBill)}`);
   lines.push(`Custo Insumos (Cabo, Tubo, Calha, etc.) --------- ${fmtEC(r.insMat)}  →  ${fmtC10(r.insMat)}`);
+  if(scaf>0)lines.push(`${scafTipo} --------- ${scafDias} dia${scafDias!==1?'s':''}  →  ${fmtC10(scaf)}`);
   lines.push(`Total Geral --------- ${fmtEC(tot)}  →  ${fmtC10(totBill)}`);
   if(halfDays>0){
     const fullDays=Math.floor(halfDays/2);
@@ -1138,7 +1170,8 @@ function snapshotState(){
   const s={};
   document.querySelectorAll('.qinp,.qinp-hi,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
   document.querySelectorAll('.pinp').forEach(el=>{s[el.id]=el.value;});
-  ['q-central','s-ctipo','s-csub','i-rate','i-extra'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
+  ['q-central','s-ctipo','s-csub','i-rate','i-extra','andaime-tipo','andaime-dias','andaime-custo'].forEach(k=>{s[k]=document.getElementById(k)?.value;});
+  s['chk-andaime']=document.getElementById('chk-andaime')?.checked?'1':'';
   s.alt=getH();
   // Per-system data
   const sysData={};
@@ -1169,6 +1202,7 @@ function loadState(){
     Object.entries(s).forEach(([k,v])=>{if(k.startsWith('_'))return;const el=document.getElementById(k);if(el)el.value=v;});
     if(s.alt){const el=document.querySelector(`input[name="alt"][value="${s.alt}"]`);if(el)el.checked=true;}
     updCLbl();
+    if(s['chk-andaime']==='1'){const el=document.getElementById('chk-andaime');if(el)el.checked=true;}
     if(s._sys){
       Object.entries(s._sys).forEach(([sysId,data])=>{
         (data.ins||[]).forEach(ins=>{
@@ -1206,6 +1240,9 @@ function resetAll(){
   document.querySelectorAll('.qinp,.qinp-hi,.cinp').forEach(i=>i.value=0);
   ['q-central','i-extra'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=0;});
   document.querySelector('input[name="alt"][value="lo"]').checked=true;
+  const chkA=document.getElementById('chk-andaime');if(chkA)chkA.checked=false;
+  const aD=document.getElementById('andaime-dias');if(aD)aD.value=1;
+  const aC=document.getElementById('andaime-custo');if(aC)aC.value=150;
   document.getElementById('sb-emerg').innerHTML='';document.getElementById('sb-inc').innerHTML='';
   SYS_LIST.forEach(s=>{
     const iEl=document.getElementById('si-rows-'+s.id);if(iEl)iEl.innerHTML='';
@@ -1215,6 +1252,33 @@ function resetAll(){
   document.querySelectorAll('.item.on,.cline.on').forEach(r=>r.classList.remove('on'));
   renderEmail(['← Preencha os equipamentos e clique "Gerar Email"'],true);
   recalc();
+}
+
+// ── Andaime / Plataforma ──────────────────────────────────────────────────────
+function hasHeightItems(){
+  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX];
+  return allEq.some(it=>{
+    const m=MONT[it.mk];
+    if(m.lo===m.hi)return false;
+    return (parseFloat(document.getElementById('qhi-'+it.id)?.value)||0)>0;
+  }) || getH()==='hi';
+}
+function andaimeCost(){
+  if(!document.getElementById('chk-andaime')?.checked)return 0;
+  const dias=parseFloat(document.getElementById('andaime-dias')?.value)||1;
+  const cpd=parseFloat(document.getElementById('andaime-custo')?.value)||150;
+  return dias*cpd;
+}
+function updAndaime(){
+  const hasH=hasHeightItems();
+  const chk=document.getElementById('chk-andaime')?.checked;
+  const warn=document.getElementById('warn-andaime');
+  const fields=document.getElementById('andaime-fields');
+  const val=document.getElementById('andaime-val');
+  if(warn)warn.style.display=hasH&&!chk?'flex':'none';
+  if(fields)fields.style.display=chk?'flex':'none';
+  const c=andaimeCost();
+  if(val)val.textContent=c>0?fmtE(c):'—';
 }
 
 function pad(n){return String(n).padStart(2,'0');}
