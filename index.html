@@ -349,6 +349,23 @@ html.dark .stbar{background:#1e293b}
   </div>
 </div>
 
+<div class="card" id="card-ria">
+  <div class="chdr closed" onclick="tog('ria')">RIA / CIAS — Rede de Incêndio Armada <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-ria">
+    <div id="eq-ria"></div>
+    <div class="subsec-hdr" onclick="togSub('ins-ria')">Materiais / Fixação <span id="arr-ins-ria">▶</span></div>
+    <div id="sub-ins-ria" class="hidden">
+      <div id="si-rows-ria"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysInsumo('ria')">+ Material</button></div>
+    </div>
+    <div class="subsec-hdr" onclick="togSub('ext-ria')">Trabalhos Adicionais <span id="arr-ext-ria">▶</span></div>
+    <div id="sub-ext-ria" class="hidden">
+      <div id="se-rows-ria"></div>
+      <div class="sub-add"><button class="btn-sub-add" onclick="addSysExtra('ria')">+ Trabalho</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="card" id="card-desfum">
   <div class="chdr closed" onclick="tog('desfum')">Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-desfum">
@@ -539,7 +556,8 @@ const MONT={
   painel_rep:{lo:90,hi:90},
   motor_damper:{lo:45,hi:75},damper:{lo:30,hi:50},modulo_int:{lo:20,hi:20},
   central_gas:{lo:60,hi:60},electrovalv:{lo:30,hi:30},
-  ajax_hub:{lo:25,hi:25},ajax_det:{lo:8,hi:10},ajax_siren:{lo:10,hi:15}
+  ajax_hub:{lo:25,hi:25},ajax_det:{lo:8,hi:10},ajax_siren:{lo:10,hi:15},
+  bic:{lo:45,hi:45},central_desfum:{lo:90,hi:90}
 };
 // All times in seconds
 const INST={
@@ -589,6 +607,7 @@ const EQ_DESFUM=[
   {id:'desfum-motor',  name:'Motor Atuador de Damper',         mk:'motor_damper',inst:{base:0,lig:1,det:0,ensaio:1}, email:'motores atuadores de damper'},
   {id:'desfum-damper', name:'Damper Corta-Fugas',              mk:'damper',      inst:{base:0,lig:0,det:0,ensaio:1}, email:'dampers corta-fugas'},
   {id:'desfum-modint', name:'Módulo de Integração c/ Central', mk:'modulo_int',  inst:{base:0,lig:1,det:0,ensaio:1}, email:'módulos integração central incêndio'},
+  {id:'desfum-central',name:'Central de Desenfumagem',        mk:'central_desfum',inst:{base:0,lig:1,det:0,ensaio:1}, email:'central desenfumagem'},
 ];
 const EQ_GAS=[
   {id:'gas-central',      name:'Central / Painel de Deteção de Gás', mk:'central_gas', inst:{base:0,lig:1,det:0,ensaio:1}, email:'central deteção de gás'},
@@ -608,6 +627,10 @@ const EQ_AJAX=[
   {id:'ajax-fireplus',  name:'Ajax FireProtect Plus CO (EN54 Fumo+Calor+CO)',     mk:'ajax_det',   inst:{base:1,lig:0,det:0,ensaio:1}, email:'detetores FireProtect Plus'},
   {id:'ajax-siren-int', name:'Ajax HomeSiren (Sirene EN54 Interior)',  mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes HomeSiren'},
   {id:'ajax-siren-ext', name:'Ajax StreetSiren Plus (Sirene EN54 Exterior)',mk:'ajax_siren', inst:{base:0,lig:0,det:0,ensaio:1}, email:'sirenes StreetSiren'},
+];
+const EQ_RIA=[
+  {id:'bic-carretel', name:'Boca de Incêndio Carretel', mk:'bic', inst:{}, email:'bocas de incêndio carretel', sec:'RIA'},
+  {id:'bic-parede',   name:'Boca de Incêndio Parede',   mk:'bic', inst:{}, email:'bocas de incêndio parede',   sec:'RIA'},
 ];
 // Sinais de Emergência (verde) — saídas e vias de evacuação
 const SINAIS_EMERG=[
@@ -687,6 +710,7 @@ const SYS_LIST=[
   {id:'gas',   emailTag:'DETEÇÃO GÁS',  cables:()=>CABOS.filter(c=>c.sec==='GAS'), eqs:()=>EQ_GAS,   sigGroup:null, noVD:false},
   {id:'co',    emailTag:'DETEÇÃO CO',   cables:()=>CABOS.filter(c=>c.sec==='CO'), eqs:()=>EQ_CO,    sigGroup:null, noVD:false},
   {id:'ajax',  emailTag:'AJAX SEM FIO', cables:()=>CABOS.filter(c=>c.sec==='AJAX'), eqs:()=>EQ_AJAX,  sigGroup:null, noVD:true},
+  {id:'ria',   emailTag:'RIA/CIAS',    cables:()=>[],                               eqs:()=>EQ_RIA,   sigGroup:null, noVD:true},
 ];
 const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
 
@@ -733,6 +757,7 @@ buildEq('eq-desfum', EQ_DESFUM);
 buildEq('eq-gas',    EQ_GAS);
 buildEq('eq-co',     EQ_CO);
 buildEq('eq-ajax',   EQ_AJAX);
+buildEq('eq-ria',    EQ_RIA);
 buildLine('cl-sadi',CABOS.filter(c=>c.sec==='SADI'));
 buildLine('cl-saie',CABOS.filter(c=>c.sec==='SAIE'));
 buildLine('cl-desfum',CABOS.filter(c=>c.sec==='DESFUM'));
@@ -964,7 +989,7 @@ function recalc(){
   const h=getH();
 
   // Update item values
-  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX];
+  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX,...EQ_RIA];
   allEq.forEach(it=>{
     const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;
     const row=document.getElementById('row-'+it.id);
@@ -1256,7 +1281,7 @@ function resetAll(){
 
 // ── Andaime / Plataforma ──────────────────────────────────────────────────────
 function hasHeightItems(){
-  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX];
+  const allEq=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX,...EQ_RIA];
   return allEq.some(it=>{
     const m=MONT[it.mk];
     if(m.lo===m.hi)return false;
@@ -1367,11 +1392,14 @@ async function parseReport(){
     ...EQ_GAS.map(e=>({id:e.id,name:e.name,sys:'GAS'})),
     ...EQ_CO.map(e=>({id:e.id,name:e.name,sys:'CO'})),
     ...EQ_AJAX.map(e=>({id:e.id,name:e.name,sys:'AJAX'})),
+    ...EQ_RIA.map(e=>({id:e.id,name:e.name,sys:'RIA'})),
   ];
   const cableRef=[...CABOS,...TUBOS_VD,...ISOGRIS].map(c=>({id:c.id,name:c.eml||c.name,u:c.u}));
 
   const eqLines=allEq.map(e=>e.id+': '+e.name+' ['+e.sys+']').join('\n');
   const cableLines=cableRef.map(c=>c.id+': '+c.name+' ('+c.u+')').join('\n');
+  const emergLines=SINAIS_EMERG.map((s,i)=>i+': '+s.label+' ('+s.code+') tipos:'+s.tipos.join('/')+' sizes:'+s.sizes.join('/')).join('\n');
+  const incLines=SINAIS_INC.map((s,i)=>i+': '+s.label+' ('+s.code+') tipos:'+s.tipos.join('/')+' sizes:'+s.sizes.join('/')).join('\n');
 
   const systemPrompt='És um assistente especializado em sistemas de segurança contra incêndio (SCIE) em Portugal.\n'
     +'Receberás um relatório de vistoria técnica. O relatório pode ter colunas OK/KO/NKO ou semelhantes.\n'
@@ -1379,12 +1407,16 @@ async function parseReport(){
     +'Não excluas itens NKO só porque "não implica substituição" — repositionamento, sinalização e correção de não-conformidades são trabalho faturável.\n'
     +'Para cada item KO/NKO: mapeia para o ID de equipamento mais próximo e usa a quantidade indicada (ou conta as referências individuais).\n'
     +'Se o relatório indicar metragens de cabo ou materiais a instalar, inclui também.\n'
+    +'Itens de sinalização (sinal de saída, sinal de PCF, sinal de barra, etc.) mapeia para a lista de SINAIS abaixo.\n'
     +'Coloca em "notas" apenas o que for impossível mapear para qualquer ID disponível.\n\n'
     +'EQUIPAMENTOS (id: nome [sistema]):\n'+eqLines+'\n\n'
     +'CABOS E MATERIAIS (id: nome (unidade)):\n'+cableLines+'\n\n'
     +'CENTRAL DE INCÊNDIO: q-central=quantidade, s-ctipo="end"(endereçável)/"conv"(convencional), s-csub=nº loops/zonas\n\n'
+    +'SINAIS DE EMERGÊNCIA (grupo "emerg", idx=índice):\n'+emergLines+'\n\n'
+    +'SINAIS DE INCÊNDIO (grupo "inc", idx=índice):\n'+incLines+'\n\n'
+    +'Para cada sinal NKO (falta de sinalização): usa o índice correto da lista acima. tipo deve ser um dos valores listados em "tipos". size deve ser um dos valores em "sizes".\n\n'
     +'Responde APENAS com JSON válido, sem markdown, sem texto extra:\n'
-    +'{"central":{"qty":0,"tipo":"end","sub":1},"equipamentos":[{"id":"det-fumo","qty":5}],"cabos":[{"id":"lih-2x1","qty":50}],"rate":65,"notas":"observações ou itens não mapeados"}';
+    +'{"central":{"qty":0,"tipo":"end","sub":1},"equipamentos":[{"id":"det-fumo","qty":5}],"cabos":[{"id":"lih-2x1","qty":50}],"sinais":[{"grupo":"emerg","idx":5,"tipo":"1","size":"300x150","qty":1}],"rate":65,"notas":"observações ou itens não mapeados"}';
 
   // Build message content — PDF takes priority over textarea
   let userContent;
@@ -1442,11 +1474,31 @@ function applyAiResult(json,status){
     if(el){el.value=item.qty;syncC(item.id);}
   });
   if(json.rate){const el=document.getElementById('i-rate');if(el)el.value=json.rate;}
+  // Clear existing sinais rows before adding new ones
+  document.querySelectorAll('#sb-emerg tr,#sb-inc tr').forEach(r=>r.remove());
+  (json.sinais||[]).forEach(function(sn){
+    addSinal(sn.grupo);
+    const rid=snId;
+    const lEl=document.getElementById('ss-l-'+rid);
+    if(lEl){lEl.value=sn.idx;updSn(rid);}
+    const tEl=document.getElementById('ss-t-'+rid);
+    if(tEl&&sn.tipo){tEl.value=sn.tipo;updSnSz(rid);}
+    const szEl=document.getElementById('ss-s-'+rid);
+    if(szEl&&sn.size)szEl.value=sn.size;
+    const qEl=document.getElementById('ss-q-'+rid);
+    if(qEl)qEl.value=sn.qty||1;
+  });
   recalc();
-  ['cent','sadi','saie','ext','spv','desfum','gas','co','ajax','sinais-emerg','sinais-inc'].forEach(function(id){
+  ['cent','sadi','saie','ext','spv','ria','desfum','gas','co','ajax','sinais-emerg','sinais-inc'].forEach(function(id){
     const body=document.getElementById('body-'+id);
     if(body&&body.classList.contains('hidden')&&body.querySelectorAll('.on').length>0)tog(id);
   });
+  if((json.sinais||[]).length>0){
+    ['sinais-emerg','sinais-inc'].forEach(function(id){
+      const body=document.getElementById('body-'+id);
+      if(body&&body.classList.contains('hidden'))tog(id);
+    });
+  }
   if(parseInt(document.getElementById('q-central').value)>0){
     const b=document.getElementById('body-cent');
     if(b&&b.classList.contains('hidden'))tog('cent');
