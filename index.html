@@ -566,6 +566,34 @@ html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
   <div class="cbody hidden" id="body-map">
     <div class="cfg">
       <div>
+        <label style="font-size:11px;display:block;margin-bottom:4px">Utilização-Tipo</label>
+        <select id="map-ut" onchange="recalc()" style="font-size:12px">
+          <option value="">— Selecionar —</option>
+          <option value="I">I — Habitacionais</option>
+          <option value="II">II — Estacionamentos</option>
+          <option value="III">III — Administrativos</option>
+          <option value="IV">IV — Escolares</option>
+          <option value="V">V — Hospitalares e Lares de Idosos</option>
+          <option value="VI">VI — Espectáculos e Reuniões Públicas</option>
+          <option value="VII">VII — Hoteleiros e Restauração</option>
+          <option value="VIII">VIII — Comerciais e Gares de Transporte</option>
+          <option value="IX">IX — Desportivos e de Lazer</option>
+          <option value="X">X — Museus e Galerias de Arte</option>
+          <option value="XI">XI — Bibliotecas e Arquivos</option>
+          <option value="XII">XII — Industriais, Oficinas e Armazéns</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;display:block;margin-bottom:4px">Categoria de Risco</label>
+        <select id="map-cat" onchange="recalc()" style="font-size:12px">
+          <option value="">— Selecionar —</option>
+          <option value="1">1ª Categoria</option>
+          <option value="2">2ª Categoria</option>
+          <option value="3">3ª Categoria</option>
+          <option value="4">4ª Categoria</option>
+        </select>
+      </div>
+      <div>
         <label style="font-size:11px;display:block;margin-bottom:4px">Modo</label>
         <div class="map-mode-wrap">
           <label class="map-mode-btn"><input type="radio" name="map-modo" value="nova" checked onchange="updMapMode()"> Nova MAP</label>
@@ -575,7 +603,7 @@ html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
       <div id="map-fator-wrap" style="display:none">
         <label style="font-size:11px">Fator de atualização</label>
         <input type="number" id="map-fator" value="50" min="10" max="100" step="5" style="width:58px" oninput="recalc()">
-        <span style="font-size:11px">%&nbsp;<em style="color:var(--grey)">(% do tempo de nova MAP)</em></span>
+        <span style="font-size:11px">%&nbsp;<em style="color:var(--grey)">(% do tempo)</em></span>
       </div>
       <div>
         <label style="font-size:11px;display:block;margin-bottom:4px">Taxa (€/h)</label>
@@ -618,13 +646,35 @@ html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
           <div id="mg-cad" class="map-items"></div>
         </div>
         <div style="margin-top:12px">
-          <div class="map-grp-hdr">Extras / Entregas</div>
+          <div class="map-grp-hdr">Submissão ANEPC</div>
           <div class="map-extras">
-            <label class="map-extra-row"><input type="checkbox" id="map-online" onchange="recalc()"> Entrega Online ANEPC <span class="map-extra-tag">+60 min + 95€</span></label>
-            <label class="map-extra-row"><input type="checkbox" id="map-presencial" onchange="recalc()"> Entrega Presencial ANEPC <span class="map-extra-tag">+60 min</span></label>
-            <label class="map-extra-row"><input type="checkbox" id="map-papel" onchange="recalc()"> Exemplar em Papel
-              <input type="number" id="map-papel-val" value="25" min="0" step="5" style="width:52px;margin-left:4px" oninput="recalc()"> <span>€</span>
-            </label>
+            <label class="map-extra-row"><input type="radio" name="map-sub" value="nao" checked onchange="recalc()"> Não incluída</label>
+            <label class="map-extra-row"><input type="radio" name="map-sub" value="online" onchange="recalc()"> Online <span class="map-extra-tag">+60 min + 95€</span></label>
+            <label class="map-extra-row"><input type="radio" name="map-sub" value="presencial" onchange="recalc()"> Presencial <span class="map-extra-tag">+60 min</span></label>
+          </div>
+          <div style="margin-top:10px">
+            <div class="map-grp-hdr">Plantas de Emergência</div>
+            <div class="map-extras">
+              <label class="map-extra-row">
+                <input type="checkbox" id="map-plantas" onchange="recalc()"> Incluir plantas
+              </label>
+              <div id="map-plantas-fields" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+                <span style="font-size:11px">Qtd:</span>
+                <input type="number" id="map-plantas-qty" value="1" min="1" step="1" style="width:46px" oninput="recalc()">
+                <span style="font-size:11px">plantas ×</span>
+                <input type="number" id="map-plantas-min" value="30" min="5" step="5" style="width:46px" oninput="recalc()">
+                <span style="font-size:11px">min/planta</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="map-grp-hdr">Outros</div>
+            <div class="map-extras">
+              <label class="map-extra-row">
+                <input type="checkbox" id="map-papel" onchange="recalc()"> Exemplar em Papel
+                <input type="number" id="map-papel-val" value="25" min="0" step="5" style="width:52px;margin-left:4px" oninput="recalc()"> <span>€</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -1346,18 +1396,19 @@ function genEmail(){
   if(mr.tot>0){
     lines.push('');
     lines.push('MAP — MEDIDAS DE AUTOPROTECÇÃO');
-    const modo=mr.modo==='atualizacao'?` (Atualização — ${Math.round(mr.fator*100)}%)`:' (Nova MAP)';
-    lines.push(`Elaboração de MAP${modo}`);
-    MAP_SECTIONS.forEach(function(sec){
-      const el=document.getElementById(sec.id);
-      if(el&&el.checked&&sec.mins>0){
-        const eff=Math.round(sec.mins*mr.fator);
-        lines.push(`  · ${sec.label} ----- ${eff} min`);
-      }
-    });
-    if(document.getElementById('map-online')?.checked)lines.push('  · Entrega Online ANEPC ----- 60 min + 95€');
-    if(document.getElementById('map-presencial')?.checked)lines.push('  · Entrega Presencial ANEPC ----- 60 min');
-    if(document.getElementById('map-papel')?.checked)lines.push(`  · Exemplar em Papel ----- ${parseFloat(document.getElementById('map-papel-val')?.value)||0}€`);
+    const utLabel=document.getElementById('map-ut')?.options[document.getElementById('map-ut')?.selectedIndex]?.text||'';
+    const catLabel=mr.cat?mr.cat+'ª Categoria de Risco':'';
+    if(utLabel||catLabel)lines.push([utLabel,catLabel].filter(Boolean).join(' | '));
+    const modoLbl=mr.modo==='atualizacao'?`Atualização (${Math.round(mr.fator*100)}%)`:'Nova MAP';
+    lines.push(`Serviço: ${modoLbl}`);
+    // Active groups summary
+    const groupNames={prev:'Plano de Prevenção',proc:'Proc. Exploração de Instalações',emerg:'Plano de Emergência Interno',form:'Formação e Simulacros',cad:'Caderno de Registos'};
+    const activeGroups=Object.entries(groupNames).filter(([g])=>MAP_SECTIONS.filter(s=>s.group===g).some(s=>document.getElementById(s.id)?.checked));
+    if(activeGroups.length)lines.push('Composição: '+activeGroups.map(([,n])=>n).join(' · '));
+    if(mr.plantasOn)lines.push(`Plantas de Emergência: ${mr.plantasQty} un.`);
+    const subLbl={nao:'Não incluída',online:'Online (ANEPC)',presencial:'Presencial (ANEPC)'}[mr.sub]||'Não incluída';
+    lines.push(`Submissão ANEPC: ${subLbl}`);
+    if(document.getElementById('map-papel')?.checked)lines.push(`Exemplar em Papel: Sim`);
     lines.push('');
     lines.push(`Tempo MAP --------- ${mr.totalH} h`);
     lines.push(`M.O. MAP --------- ${fmtEC(mr.mo)}  →  ${fmtC10(mr.mo)}`);
@@ -1434,13 +1485,25 @@ function computeMap(){
     if(checked)totalMins+=eff;
   });
   let extraMins=0,extraCost=0;
-  if(document.getElementById('map-online')?.checked){extraMins+=60;extraCost+=95;}
-  if(document.getElementById('map-presencial')?.checked)extraMins+=60;
+  const sub=document.querySelector('input[name="map-sub"]:checked')?.value||'nao';
+  if(sub==='online'){extraMins+=60;extraCost+=95;}
+  else if(sub==='presencial')extraMins+=60;
+  const plantasOn=document.getElementById('map-plantas')?.checked;
+  const plantasPF=document.getElementById('map-plantas-fields');
+  if(plantasPF)plantasPF.style.display=plantasOn?'flex':'none';
+  if(plantasOn){
+    const qty=parseFloat(document.getElementById('map-plantas-qty')?.value)||1;
+    const minP=parseFloat(document.getElementById('map-plantas-min')?.value)||30;
+    totalMins+=qty*minP;
+  }
   if(document.getElementById('map-papel')?.checked)extraCost+=parseFloat(document.getElementById('map-papel-val')?.value)||0;
+  const ut=document.getElementById('map-ut')?.value||'';
+  const cat=document.getElementById('map-cat')?.value||'';
   const totalH=Math.round((totalMins+extraMins)*10/60)/10;
   const mo=totalH*rate;
   const tot=mo+extraCost;
-  return{totalMins,extraMins,extraCost,totalH,rate,mo,tot,modo,fator};
+  return{totalMins,extraMins,extraCost,totalH,rate,mo,tot,modo,fator,sub,ut,cat,
+    plantasOn,plantasQty:parseFloat(document.getElementById('map-plantas-qty')?.value)||1};
 }
 
 function snapshotState(){
@@ -1476,10 +1539,14 @@ function snapshotState(){
     modo:document.querySelector('input[name="map-modo"]:checked')?.value||'nova',
     fator:document.getElementById('map-fator')?.value||'50',
     rate:document.getElementById('map-rate')?.value||'95',
-    online:document.getElementById('map-online')?.checked?1:0,
-    presencial:document.getElementById('map-presencial')?.checked?1:0,
+    sub:document.querySelector('input[name="map-sub"]:checked')?.value||'nao',
+    plantas:document.getElementById('map-plantas')?.checked?1:0,
+    plantasQty:document.getElementById('map-plantas-qty')?.value||'1',
+    plantasMin:document.getElementById('map-plantas-min')?.value||'30',
     papel:document.getElementById('map-papel')?.checked?1:0,
     papelVal:document.getElementById('map-papel-val')?.value||'25',
+    ut:document.getElementById('map-ut')?.value||'',
+    cat:document.getElementById('map-cat')?.value||'',
     sections:{}
   };
   MAP_SECTIONS.forEach(function(sec){const el=document.getElementById(sec.id);if(el)mapState.sections[sec.id]=el.checked?1:0;});
@@ -1531,7 +1598,13 @@ function loadState(){
       if(document.getElementById('map-fator')&&m.fator)document.getElementById('map-fator').value=m.fator;
       if(document.getElementById('map-rate')&&m.rate)document.getElementById('map-rate').value=m.rate;
       if(document.getElementById('map-papel-val')&&m.papelVal)document.getElementById('map-papel-val').value=m.papelVal;
-      ['map-online','map-presencial','map-papel'].forEach(k=>{const el=document.getElementById(k);if(el)el.checked=!!m[k.replace('map-','')];});
+      if(m.sub){const el=document.querySelector(`input[name="map-sub"][value="${m.sub}"]`);if(el)el.checked=true;}
+      if(document.getElementById('map-plantas')&&m.plantas!==undefined)document.getElementById('map-plantas').checked=!!m.plantas;
+      if(document.getElementById('map-plantas-qty')&&m.plantasQty)document.getElementById('map-plantas-qty').value=m.plantasQty;
+      if(document.getElementById('map-plantas-min')&&m.plantasMin)document.getElementById('map-plantas-min').value=m.plantasMin;
+      if(document.getElementById('map-papel')&&m.papel!==undefined)document.getElementById('map-papel').checked=!!m.papel;
+      if(document.getElementById('map-ut')&&m.ut)document.getElementById('map-ut').value=m.ut;
+      if(document.getElementById('map-cat')&&m.cat)document.getElementById('map-cat').value=m.cat;
       if(m.sections)MAP_SECTIONS.forEach(function(sec){const el=document.getElementById(sec.id);if(el&&m.sections[sec.id]!==undefined)el.checked=!!m.sections[sec.id];});
     }
   }catch(e){}
