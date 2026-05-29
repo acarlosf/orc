@@ -645,37 +645,38 @@ html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
           </div>
           <div id="mg-cad" class="map-items"></div>
         </div>
-        <div style="margin-top:12px">
-          <div class="map-grp-hdr">Submissão ANEPC</div>
-          <div class="map-extras">
-            <label class="map-extra-row"><input type="radio" name="map-sub" value="nao" checked onchange="recalc()"> Não incluída</label>
-            <label class="map-extra-row"><input type="radio" name="map-sub" value="online" onchange="recalc()"> Online <span class="map-extra-tag">+60 min + 95€</span></label>
-            <label class="map-extra-row"><input type="radio" name="map-sub" value="presencial" onchange="recalc()"> Presencial <span class="map-extra-tag">+60 min</span></label>
+      </div>
+    </div>
+    <!-- Submissão / Plantas / Outros — faixa separada bem visível -->
+    <div style="border-top:2px solid #e0d0f0;padding:12px 14px;background:#faf8ff;display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <div class="map-grp-hdr" style="margin-bottom:8px">Submissão ANEPC</div>
+        <div class="map-extras">
+          <label class="map-extra-row"><input type="radio" name="map-sub" value="nao" checked onchange="recalc()"> Não incluída</label>
+          <label class="map-extra-row"><input type="radio" name="map-sub" value="online" onchange="recalc()"> Online <span class="map-extra-tag">+60 min + 95€</span></label>
+          <label class="map-extra-row"><input type="radio" name="map-sub" value="presencial" onchange="recalc()"> Presencial <span class="map-extra-tag">+60 min</span></label>
+        </div>
+      </div>
+      <div>
+        <div class="map-grp-hdr" style="margin-bottom:8px">Plantas de Emergência</div>
+        <div class="map-extras">
+          <label class="map-extra-row"><input type="checkbox" id="map-plantas" onchange="recalc()"> Incluir plantas de emergência</label>
+          <div id="map-plantas-fields" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <span style="font-size:11px">Qtd:</span>
+            <input type="number" id="map-plantas-qty" value="1" min="1" step="1" style="width:46px" oninput="recalc()">
+            <span style="font-size:11px">plantas ×</span>
+            <input type="number" id="map-plantas-min" value="30" min="5" step="5" style="width:46px" oninput="recalc()">
+            <span style="font-size:11px">min/planta</span>
           </div>
-          <div style="margin-top:10px">
-            <div class="map-grp-hdr">Plantas de Emergência</div>
-            <div class="map-extras">
-              <label class="map-extra-row">
-                <input type="checkbox" id="map-plantas" onchange="recalc()"> Incluir plantas
-              </label>
-              <div id="map-plantas-fields" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
-                <span style="font-size:11px">Qtd:</span>
-                <input type="number" id="map-plantas-qty" value="1" min="1" step="1" style="width:46px" oninput="recalc()">
-                <span style="font-size:11px">plantas ×</span>
-                <input type="number" id="map-plantas-min" value="30" min="5" step="5" style="width:46px" oninput="recalc()">
-                <span style="font-size:11px">min/planta</span>
-              </div>
-            </div>
-          </div>
-          <div style="margin-top:10px">
-            <div class="map-grp-hdr">Outros</div>
-            <div class="map-extras">
-              <label class="map-extra-row">
-                <input type="checkbox" id="map-papel" onchange="recalc()"> Exemplar em Papel
-                <input type="number" id="map-papel-val" value="25" min="0" step="5" style="width:52px;margin-left:4px" oninput="recalc()"> <span>€</span>
-              </label>
-            </div>
-          </div>
+        </div>
+      </div>
+      <div>
+        <div class="map-grp-hdr" style="margin-bottom:8px">Outros</div>
+        <div class="map-extras">
+          <label class="map-extra-row">
+            <input type="checkbox" id="map-papel" onchange="recalc()"> Exemplar em Papel
+            <input type="number" id="map-papel-val" value="25" min="0" step="5" style="width:52px;margin-left:4px" oninput="recalc()"> <span>€</span>
+          </label>
         </div>
       </div>
     </div>
