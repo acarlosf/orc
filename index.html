@@ -192,6 +192,36 @@ html.dark .cfg{background:#0f172a;border-color:#334155}
 html.dark .cblock{background:#1e293b;border-color:#334155}
 html.dark .warn-box{background:#1c1200;border-color:#854d0e;color:#fbbf24}
 html.dark .stbar{background:#1e293b}
+/* MAP */
+#card-map{grid-column:span 2}
+.map-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.map-group{border-bottom:1px solid var(--border);padding:10px 14px}
+.map-grp-hdr{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.map-sel-all{font-size:10px;cursor:pointer;color:var(--blue2);font-weight:500;text-transform:none;letter-spacing:0;padding:1px 6px;border:1px solid var(--blue2);border-radius:3px}
+.map-sel-all:hover{background:var(--accent)}
+.map-items{display:flex;flex-direction:column;gap:3px}
+.map-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:2px 4px;border-radius:3px;cursor:pointer}
+.map-item:hover{background:#f8f9ff}
+.map-item input[type=checkbox]{accent-color:var(--blue2);cursor:pointer}
+.map-item label{cursor:pointer;flex:1}
+.map-item-mins{margin-left:auto;font-size:10px;color:#aaa;white-space:nowrap}
+.map-item-mins.on{color:var(--green);font-weight:600}
+.map-extras{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.map-extra-row{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}
+.map-extra-tag{background:#f0f0f0;border-radius:3px;padding:1px 5px;font-size:10px;color:#555}
+.map-result{background:linear-gradient(90deg,#f0f4ff,#f8f0ff);padding:12px 18px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;border-top:2px solid #7c3aed}
+.map-res-item{display:flex;flex-direction:column;gap:1px;font-size:11px;color:var(--grey)}
+.map-res-item strong{font-size:14px;color:#1a1a2e}
+.map-res-total strong{font-size:16px;color:#7c3aed;font-weight:700}
+.map-mode-wrap{display:flex;gap:10px}
+.map-mode-btn{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px}
+#map-fator-wrap{display:flex;align-items:center;gap:6px;font-size:12px}
+html.dark .map-item:hover{background:#1e2a3a}
+html.dark .map-extra-tag{background:#334155;color:#94a3b8}
+html.dark .map-result{background:linear-gradient(90deg,#0f172a,#1a0f2e);border-color:#7c3aed}
+html.dark .map-res-item strong{color:#e2e8f0}
+html.dark .map-grp-hdr{color:#93c5fd}
+html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
 </style>
 </head>
 <body>
@@ -530,6 +560,85 @@ html.dark .stbar{background:#1e293b}
   </div>
 </div>
 
+<!-- MAP -->
+<div class="card" id="card-map">
+  <div class="chdr closed" onclick="tog('map')" style="background:#4b1a6b">MAP — Medidas de Autoprotecção <span class="chev">▼</span></div>
+  <div class="cbody hidden" id="body-map">
+    <div class="cfg">
+      <div>
+        <label style="font-size:11px;display:block;margin-bottom:4px">Modo</label>
+        <div class="map-mode-wrap">
+          <label class="map-mode-btn"><input type="radio" name="map-modo" value="nova" checked onchange="updMapMode()"> Nova MAP</label>
+          <label class="map-mode-btn"><input type="radio" name="map-modo" value="atualizacao" onchange="updMapMode()"> Atualização</label>
+        </div>
+      </div>
+      <div id="map-fator-wrap" style="display:none">
+        <label style="font-size:11px">Fator de atualização</label>
+        <input type="number" id="map-fator" value="50" min="10" max="100" step="5" style="width:58px" oninput="recalc()">
+        <span style="font-size:11px">%&nbsp;<em style="color:var(--grey)">(% do tempo de nova MAP)</em></span>
+      </div>
+      <div>
+        <label style="font-size:11px;display:block;margin-bottom:4px">Taxa (€/h)</label>
+        <input type="number" id="map-rate" value="95" min="1" step="1" style="width:70px" oninput="recalc()">
+      </div>
+    </div>
+    <div class="map-body">
+      <div class="map-group">
+        <div class="map-grp-hdr">Plano de Prevenção
+          <span class="map-sel-all" onclick="mapSelGroup('prev',true)">✓ Todos</span>
+          <span class="map-sel-all" onclick="mapSelGroup('prev',false)">✗ Nenhum</span>
+        </div>
+        <div id="mg-prev" class="map-items"></div>
+      </div>
+      <div class="map-group">
+        <div class="map-grp-hdr">Proc. Exploração de Instalações
+          <span class="map-sel-all" onclick="mapSelGroup('proc',true)">✓ Todos</span>
+          <span class="map-sel-all" onclick="mapSelGroup('proc',false)">✗ Nenhum</span>
+        </div>
+        <div id="mg-proc" class="map-items"></div>
+      </div>
+      <div class="map-group">
+        <div class="map-grp-hdr">Plano de Emergência Interno
+          <span class="map-sel-all" onclick="mapSelGroup('emerg',true)">✓ Todos</span>
+          <span class="map-sel-all" onclick="mapSelGroup('emerg',false)">✗ Nenhum</span>
+        </div>
+        <div id="mg-emerg" class="map-items"></div>
+      </div>
+      <div class="map-group">
+        <div class="map-grp-hdr">Formação e Simulacros
+          <span class="map-sel-all" onclick="mapSelGroup('form',true)">✓ Todos</span>
+          <span class="map-sel-all" onclick="mapSelGroup('form',false)">✗ Nenhum</span>
+        </div>
+        <div id="mg-form" class="map-items"></div>
+        <div style="margin-top:12px">
+          <div class="map-grp-hdr">Caderno de Registos
+            <span class="map-sel-all" onclick="mapSelGroup('cad',true)">✓ Todos</span>
+            <span class="map-sel-all" onclick="mapSelGroup('cad',false)">✗ Nenhum</span>
+          </div>
+          <div id="mg-cad" class="map-items"></div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="map-grp-hdr">Extras / Entregas</div>
+          <div class="map-extras">
+            <label class="map-extra-row"><input type="checkbox" id="map-online" onchange="recalc()"> Entrega Online ANEPC <span class="map-extra-tag">+60 min + 95€</span></label>
+            <label class="map-extra-row"><input type="checkbox" id="map-presencial" onchange="recalc()"> Entrega Presencial ANEPC <span class="map-extra-tag">+60 min</span></label>
+            <label class="map-extra-row"><input type="checkbox" id="map-papel" onchange="recalc()"> Exemplar em Papel
+              <input type="number" id="map-papel-val" value="25" min="0" step="5" style="width:52px;margin-left:4px" oninput="recalc()"> <span>€</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="map-result">
+      <div class="map-res-item"><span>Tempo</span><strong id="map-r-h">—</strong></div>
+      <div class="map-res-item"><span>M.O.</span><strong id="map-r-mo">—</strong></div>
+      <div class="map-res-item"><span>Extras</span><strong id="map-r-ext">—</strong></div>
+      <div class="map-res-item map-res-total"><span>Total Real</span><strong id="map-r-tot">—</strong></div>
+      <div class="map-res-item map-res-total"><span>Total → Cliente</span><strong id="map-r-tot10">—</strong></div>
+    </div>
+  </div>
+</div>
+
 <!-- Email -->
 <div class="card" id="email-card">
   <div class="chdr closed" style="cursor:default">Email de Orçamento Interno</div>
@@ -699,6 +808,63 @@ const OUTROS=[
   {id:'caixderiv',name:'Caixa Derivação IP55',c:1.75,u:'un',eml:null},
 ];
 
+// ── MAP sections ─────────────────────────────────────────────────────────────
+const MAP_SECTIONS=[
+  // Plano de Prevenção
+  {id:'mp-classut',    label:'Classificação da UT',                     mins:25, group:'prev'},
+  {id:'mp-dispadm',    label:'Disposições Administrativas',              mins:15, group:'prev'},
+  {id:'mp-caract',     label:'Caracterização da UT',                     mins:25, group:'prev', opt:true},
+  {id:'mp-atendb',     label:'Atenuação das Debilidades',                mins:25, group:'prev', opt:true},
+  {id:'mp-atendbdet',  label:'Detalhe da Atenuação das Debilidades',     mins:0,  group:'prev', opt:true},
+  {id:'mp-proced-ed',  label:'Proc. Exploração do Edifício',             mins:12, group:'prev'},
+  // Procedimentos de Exploração
+  {id:'mp-proc-el',    label:'Instalação Eléctrica',                     mins:6, group:'proc'},
+  {id:'mp-proc-liq',   label:'Líquidos e Gases Combustíveis',            mins:6, group:'proc'},
+  {id:'mp-proc-avac',  label:'AVAC',                                     mins:6, group:'proc'},
+  {id:'mp-proc-aq',    label:'Aquecimento',                              mins:6, group:'proc'},
+  {id:'mp-proc-elev',  label:'Elevadores',                               mins:6, group:'proc'},
+  {id:'mp-proc-conf',  label:'Confecção de Alimentos',                   mins:6, group:'proc'},
+  {id:'mp-proc-eflu',  label:'Evacuação de Efluentes Gasosos',           mins:6, group:'proc'},
+  {id:'mp-proc-vaos',  label:'Protecção de Vãos',                       mins:6, group:'proc'},
+  {id:'mp-proc-ext',   label:'Extintores',                               mins:6, group:'proc'},
+  {id:'mp-proc-sadi',  label:'SADI',                                     mins:6, group:'proc'},
+  {id:'mp-proc-sadg',  label:'SADG',                                     mins:6, group:'proc'},
+  {id:'mp-proc-co',    label:'SADCO',                                    mins:6, group:'proc'},
+  {id:'mp-proc-spk',   label:'Sprinkler',                                mins:6, group:'proc'},
+  {id:'mp-proc-ada',   label:'Agentes Distintos da Água',                mins:6, group:'proc'},
+  {id:'mp-proc-ria',   label:'RIA',                                      mins:6, group:'proc'},
+  {id:'mp-proc-cbsi',  label:'CBSI',                                     mins:6, group:'proc'},
+  {id:'mp-proc-desf',  label:'Desenfumagem',                             mins:6, group:'proc'},
+  {id:'mp-proc-saie',  label:'Sinalização e SAIE',                       mins:6, group:'proc'},
+  // Plano de Emergência
+  {id:'mp-prevrisco',  label:'Identificação dos Principais Riscos',      mins:15, group:'emerg'},
+  {id:'mp-equipa',     label:'Equipa de Segurança',                      mins:10, group:'emerg'},
+  {id:'mp-funcoesq',   label:'Funções dos Membros da Equipa',            mins:10, group:'emerg'},
+  {id:'mp-equipaesp',  label:'Equipa Específica (Detalhada)',            mins:120,group:'emerg', opt:true},
+  {id:'mp-evacproc',   label:'Procedimentos de Evacuação',               mins:10, group:'emerg'},
+  {id:'mp-evacvias',   label:'Plano das Vias de Evacuação',              mins:20, group:'emerg', opt:true},
+  {id:'mp-evacgrupos', label:'Grupos de Evacuação',                      mins:15, group:'emerg', opt:true},
+  {id:'mp-intervproc', label:'Procedimentos de Intervenção',             mins:10, group:'emerg'},
+  {id:'mp-intervesp',  label:'Intervenção Específica',                   mins:30, group:'emerg', opt:true},
+  {id:'mp-flux',       label:'Fluxograma de Actuação em Emergência',     mins:15, group:'emerg'},
+  {id:'mp-riscdist',   label:'Actuação em Riscos Distintos de Incêndio', mins:15, group:'emerg'},
+  {id:'mp-preemerg',   label:'Actuação Pré-Emergência',                  mins:10, group:'emerg'},
+  {id:'mp-actgemerg',  label:'Actuação em Emergência (Detalhado)',       mins:40, group:'emerg', opt:true},
+  {id:'mp-posemerg',   label:'Actuação Pós-Emergência',                  mins:10, group:'emerg'},
+  {id:'mp-listent',    label:'Lista de Entidades a Contactar',           mins:15, group:'emerg'},
+  {id:'mp-actdet',     label:'Plano de Actuação Detalhado',              mins:120,group:'emerg', opt:true},
+  {id:'mp-instrseg',   label:'Instruções de Segurança',                  mins:10, group:'emerg'},
+  {id:'mp-instrafx',   label:'Instruções de Segurança a Afixar',        mins:10, group:'emerg', opt:true},
+  // Formação e Simulacros
+  {id:'mp-formplan',   label:'Plano de Formação',                        mins:10, group:'form'},
+  {id:'mp-formdet',    label:'Plano de Formação Detalhado',              mins:40, group:'form', opt:true},
+  {id:'mp-simplan',    label:'Plano de Realização de Simulacros',        mins:10, group:'form'},
+  {id:'mp-simdet',     label:'Plano de Simulacros Detalhado',            mins:50, group:'form', opt:true},
+  // Caderno de Registos
+  {id:'mp-cad',        label:'Caderno de Registos de Segurança',         mins:30, group:'cad', opt:true},
+  {id:'mp-cadcomp',    label:'Caderno de Registos Completo',             mins:120,group:'cad'},
+];
+
 const SYS_LIST=[
   {id:'sadi', emailTag:'SADI',           cables:()=>CABOS.filter(c=>c.sec==='SADI'), eqs:()=>EQ_SADI,                              sigGroup:null,  noVD:false},
   {id:'saie', emailTag:'SAIE',           cables:()=>CABOS.filter(c=>c.sec==='SAIE'), eqs:()=>EQ_SAIE,                              sigGroup:null,  noVD:false},
@@ -758,6 +924,7 @@ buildEq('eq-gas',    EQ_GAS);
 buildEq('eq-co',     EQ_CO);
 buildEq('eq-ajax',   EQ_AJAX);
 buildEq('eq-ria',    EQ_RIA);
+buildMap();
 buildLine('cl-sadi',CABOS.filter(c=>c.sec==='SADI'));
 buildLine('cl-saie',CABOS.filter(c=>c.sec==='SAIE'));
 buildLine('cl-desfum',CABOS.filter(c=>c.sec==='DESFUM'));
@@ -1061,6 +1228,14 @@ function recalc(){
   const hStr=hrem>0.05?`${fmt1(hrem)} h`:'';
   document.getElementById('r-dt').textContent=[dStr,hStr].filter(Boolean).join(' e ')||'—';
 
+  // MAP result
+  const mr=computeMap();
+  document.getElementById('map-r-h').textContent=mr.totalH>0?mr.totalH+' h':'—';
+  document.getElementById('map-r-mo').textContent=mr.mo>0?fmtEC(mr.mo):'—';
+  document.getElementById('map-r-ext').textContent=mr.extraCost>0?fmtEC(mr.extraCost):'—';
+  document.getElementById('map-r-tot').textContent=mr.tot>0?fmtEC(mr.tot):'—';
+  document.getElementById('map-r-tot10').textContent=mr.tot>0?fmtC10(mr.tot):'—';
+
   // localStorage
   try{localStorage.setItem('sg5',JSON.stringify(snapshotState()));}catch(e){}
 }
@@ -1164,6 +1339,29 @@ function genEmail(){
     lines.push('');
     lines.push(`${dStr}${hStr}, 2 técnicos.`);
   }
+  // MAP section
+  const mr=computeMap();
+  if(mr.tot>0){
+    lines.push('');
+    lines.push('MAP — MEDIDAS DE AUTOPROTECÇÃO');
+    const modo=mr.modo==='atualizacao'?` (Atualização — ${Math.round(mr.fator*100)}%)`:' (Nova MAP)';
+    lines.push(`Elaboração de MAP${modo}`);
+    MAP_SECTIONS.forEach(function(sec){
+      const el=document.getElementById(sec.id);
+      if(el&&el.checked&&sec.mins>0){
+        const eff=Math.round(sec.mins*mr.fator);
+        lines.push(`  · ${sec.label} ----- ${eff} min`);
+      }
+    });
+    if(document.getElementById('map-online')?.checked)lines.push('  · Entrega Online ANEPC ----- 60 min + 95€');
+    if(document.getElementById('map-presencial')?.checked)lines.push('  · Entrega Presencial ANEPC ----- 60 min');
+    if(document.getElementById('map-papel')?.checked)lines.push(`  · Exemplar em Papel ----- ${parseFloat(document.getElementById('map-papel-val')?.value)||0}€`);
+    lines.push('');
+    lines.push(`Tempo MAP --------- ${mr.totalH} h`);
+    lines.push(`M.O. MAP --------- ${fmtEC(mr.mo)}  →  ${fmtC10(mr.mo)}`);
+    if(mr.extraCost>0)lines.push(`Extras MAP --------- ${fmtEC(mr.extraCost)}  →  ${fmtC10(mr.extraCost)}`);
+    lines.push(`Total MAP --------- ${fmtEC(mr.tot)}  →  ${fmtC10(mr.tot)}`);
+  }
   renderEmail(lines,false);
 }
 
@@ -1172,9 +1370,9 @@ function renderEmail(lines,grey){
   out.style.fontStyle=grey?'italic':'normal';out.textContent='';
   lines.forEach(l=>{
     const s=document.createElement('span');
-    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|DESENFUMAGEM|DETEÇÃO GÁS|DETEÇÃO CO|AJAX SEM FIO|MATERIAIS|EXTRAS)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
-    else if(/^\s{2}(M\.O\.|Insumos)/.test(l))s.style.cssText='color:#86efac;font-size:12px';
-    else if(/^(Mão de Obra|Custo Insumos|Total Geral)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
+    if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|RIA\/CIAS|DESENFUMAGEM|DETEÇÃO GÁS|DETEÇÃO CO|AJAX SEM FIO|MATERIAIS|EXTRAS|MAP — MEDIDAS DE AUTOPROTECÇÃO)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
+    else if(/^\s{2}(M\.O\.|Insumos|·)/.test(l))s.style.cssText='color:#86efac;font-size:12px';
+    else if(/^(Mão de Obra|Custo Insumos|Total Geral|Total MAP|M\.O\. MAP|Tempo MAP|Extras MAP)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
     else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
     else if(grey)s.style.cssText='color:#94a3b8';
     s.textContent=l+'\n';out.appendChild(s);
@@ -1191,6 +1389,58 @@ function cpEmail(){
 }
 
 // ── localStorage ──────────────────────────────────────────────────────────────
+// ── MAP ───────────────────────────────────────────────────────────────────────
+function buildMap(){
+  const groups={prev:'mg-prev',proc:'mg-proc',emerg:'mg-emerg',form:'mg-form',cad:'mg-cad'};
+  MAP_SECTIONS.forEach(function(sec){
+    const ct=document.getElementById(groups[sec.group]);
+    if(!ct)return;
+    const div=document.createElement('div');
+    div.className='map-item';
+    div.innerHTML=`<input type="checkbox" id="${sec.id}" ${sec.opt?'':'checked'} onchange="recalc()">
+      <label for="${sec.id}">${sec.label}</label>
+      <span class="map-item-mins" id="mv-${sec.id}">${sec.mins} min</span>`;
+    ct.appendChild(div);
+  });
+}
+function updMapMode(){
+  const modo=document.querySelector('input[name="map-modo"]:checked')?.value;
+  const fw=document.getElementById('map-fator-wrap');
+  if(fw)fw.style.display=modo==='atualizacao'?'flex':'none';
+  recalc();
+}
+function mapSelGroup(group,val){
+  MAP_SECTIONS.filter(s=>s.group===group).forEach(function(s){
+    const el=document.getElementById(s.id);if(el)el.checked=val;
+  });
+  recalc();
+}
+function computeMap(){
+  const modo=document.querySelector('input[name="map-modo"]:checked')?.value||'nova';
+  const fator=modo==='atualizacao'?(parseFloat(document.getElementById('map-fator')?.value)||50)/100:1;
+  const rate=parseFloat(document.getElementById('map-rate')?.value)||95;
+  let totalMins=0;
+  MAP_SECTIONS.forEach(function(sec){
+    const el=document.getElementById(sec.id);
+    const checked=el&&el.checked;
+    const eff=Math.round(sec.mins*fator);
+    const tag=document.getElementById('mv-'+sec.id);
+    if(tag){
+      tag.textContent=modo==='atualizacao'&&sec.mins>0?(sec.mins+'→'+eff+' min'):(sec.mins+' min');
+      tag.className='map-item-mins'+(checked?' on':'');
+    }
+    if(checked)totalMins+=eff;
+  });
+  let extraMins=0,extraCost=0;
+  if(document.getElementById('map-online')?.checked){extraMins+=60;extraCost+=95;}
+  if(document.getElementById('map-presencial')?.checked)extraMins+=60;
+  if(document.getElementById('map-papel')?.checked)extraCost+=parseFloat(document.getElementById('map-papel-val')?.value)||0;
+  const totalH=Math.round((totalMins+extraMins)*10/60)/10;
+  const mo=totalH*rate;
+  const tot=mo+extraCost;
+  return{totalMins,extraMins,extraCost,totalH,rate,mo,tot,modo,fator};
+}
+
 function snapshotState(){
   const s={};
   document.querySelectorAll('.qinp,.qinp-hi,.cinp').forEach(el=>{if(parseFloat(el.value))s[el.id]=el.value;});
@@ -1219,6 +1469,19 @@ function snapshotState(){
     snRows.push({grupo:tr.dataset.grupo,l:l.value,t:t?t.value:'1',sz:sz?sz.value:'',q:q?q.value:'1'});
   });
   s._snRows=snRows;
+  // MAP state
+  const mapState={
+    modo:document.querySelector('input[name="map-modo"]:checked')?.value||'nova',
+    fator:document.getElementById('map-fator')?.value||'50',
+    rate:document.getElementById('map-rate')?.value||'95',
+    online:document.getElementById('map-online')?.checked?1:0,
+    presencial:document.getElementById('map-presencial')?.checked?1:0,
+    papel:document.getElementById('map-papel')?.checked?1:0,
+    papelVal:document.getElementById('map-papel-val')?.value||'25',
+    sections:{}
+  };
+  MAP_SECTIONS.forEach(function(sec){const el=document.getElementById(sec.id);if(el)mapState.sections[sec.id]=el.checked?1:0;});
+  s._map=mapState;
   return s;
 }
 function loadState(){
@@ -1257,6 +1520,18 @@ function loadState(){
       const qEl=document.getElementById('ss-q-'+rid);
       if(qEl)qEl.value=row.q||'1';
     });
+    // MAP state
+    if(s._map){
+      const m=s._map;
+      const modeEl=document.querySelector(`input[name="map-modo"][value="${m.modo}"]`);
+      if(modeEl){modeEl.checked=true;updMapMode();}
+      ['map-fator','map-rate','map-papel-val'].forEach(k=>{const el=document.getElementById(k);if(el&&m[k.replace('map-','').replace('-val','Val')])el.value=m[k.replace('map-','').replace('-val','Val')]||el.value;});
+      if(document.getElementById('map-fator')&&m.fator)document.getElementById('map-fator').value=m.fator;
+      if(document.getElementById('map-rate')&&m.rate)document.getElementById('map-rate').value=m.rate;
+      if(document.getElementById('map-papel-val')&&m.papelVal)document.getElementById('map-papel-val').value=m.papelVal;
+      ['map-online','map-presencial','map-papel'].forEach(k=>{const el=document.getElementById(k);if(el)el.checked=!!m[k.replace('map-','')];});
+      if(m.sections)MAP_SECTIONS.forEach(function(sec){const el=document.getElementById(sec.id);if(el&&m.sections[sec.id]!==undefined)el.checked=!!m.sections[sec.id];});
+    }
   }catch(e){}
 }
 
