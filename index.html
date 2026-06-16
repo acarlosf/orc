@@ -2,12 +2,13 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Orçamentação de Sistemas de Segurança – Beta</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
 body{background:#f0f2f5;font-size:13px;color:#1a1a2e}
-:root{--green:#9ACD32;--dgreen:#6B8E23;--sidebar:#1E1E1A;--bg:#F4F5F0;--accent:#EDF2DC;--border:#d0d7de;--grey:#6b7280;--white:#fff;--red:#b91c1c;}
+:root{--green:#7a9c2d;--dgreen:#5a6e2a;--sidebar:#1e1e1e;--bg:#f0f0f0;--accent:#a3c644;--border:#d0d0d0;--grey:#666666;--white:#ffffff;--red:#b91c1c;}
 header{background:var(--blue);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px #0004}
 header img{height:40px;border-radius:4px}
 header h1{font-size:15px;font-weight:600}
@@ -43,27 +44,53 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .crow select{min-width:170px}
 .sublbl{font-size:11px;color:var(--grey);margin-bottom:2px}
 .sub-num{width:65px;text-align:center}
-.item{display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background .1s}
+.item{
+  display:grid;
+  grid-template-columns:1fr auto;
+  grid-template-rows:auto auto;
+  align-items:center;
+  min-height:56px;padding:8px 20px;
+  border-bottom:1px solid #e8e8e8;
+  transition:background .1s;background:#fff
+}
 .item:last-child{border-bottom:none}
-.item:hover{background:#f8f9ff}
-.item.on{background:#f0fdf4}
-.item.on .iname{font-weight:600;color:#14532d}
-.iname{flex:1;font-size:12.5px}
-.itag{font-size:10px;background:#f0f0f0;border-radius:3px;padding:1px 5px;color:#555;white-space:nowrap}
-.qwrap{display:flex;align-items:center;gap:5px}
-.qbtn{width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-size:14px;font-weight:600;color:var(--blue2);display:flex;align-items:center;justify-content:center}
-.qbtn:hover{background:var(--accent)}
-.qinp{width:52px;padding:3px 5px;border:1px solid var(--border);border-radius:4px;text-align:center;font-size:13px;font-weight:600}
-.qinp:focus{outline:none;border-color:var(--blue2)}
-.qhi-wrap{display:flex;align-items:center;gap:3px;margin-left:4px}
-.qhi-lbl{font-size:9px;color:#b45309;white-space:nowrap;font-weight:600}
-.qinp-hi{width:38px;padding:2px 4px;border:1px solid #fca5a5;border-radius:4px;text-align:center;font-size:11px;color:#b91c1c;background:#fff5f5}
+.item:hover{background:#f5f8ee}
+.item.on{background:#f5f8ee}
+.item.on .iname{font-weight:600;color:var(--dgreen)}
+.iname{grid-column:1;grid-row:1;font-size:14px;font-weight:500;color:#1a1a1a;align-self:end;padding-bottom:1px}
+.itag{grid-column:1;grid-row:2;font-size:12px;font-weight:400;color:#666;background:none;padding:0;border-radius:0;align-self:start;margin-top:1px}
+.qwrap{grid-column:2;grid-row:1;display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.qbtn{
+  width:36px;height:36px;
+  border:1px solid #cccccc;border-radius:4px;
+  background:#e8e8e8;cursor:pointer;
+  font-size:18px;font-weight:700;color:#333;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;transition:background .1s;flex-shrink:0
+}
+.qbtn:hover{background:#d0d0d0}
+.qbtn:active{background:#bbbbbb}
+.qinp{
+  width:48px;height:36px;
+  padding:0 4px;border:1px solid #bbbbbb;border-radius:4px;
+  text-align:center;font-size:14px;font-weight:600;color:#1a1a1a;
+  background:#fff
+}
+.qinp:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(122,156,45,0.15)}
+.qhi-wrap{grid-column:2;grid-row:2;display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:4px}
+.qhi-lbl{font-size:11px;color:#b45309;white-space:nowrap;font-weight:600}
+.qinp-hi{
+  width:48px;height:32px;
+  padding:0 4px;border:1px solid #fca5a5;border-radius:4px;
+  text-align:center;font-size:13px;font-weight:600;color:#b91c1c;
+  background:#fff5f5
+}
 .qinp-hi:focus{outline:none;border-color:#b91c1c}
 html.dark .qinp-hi{background:#3f0a0a;color:#fca5a5;border-color:#991b1b}
-.ival{font-size:11px;color:var(--green);font-weight:600;min-width:54px;text-align:right}
+.ival{display:none}
 .stbar{padding:8px 14px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
-.btn-add{padding:5px 12px;background:var(--blue2);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500}
-.btn-add:hover{background:var(--blue)}
+.btn-add{padding:5px 12px;background:var(--green);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-add:hover{background:var(--dgreen)}
 .stbl{width:100%;border-collapse:collapse;font-size:12px}
 .stbl th{background:#f0f4ff;padding:6px 8px;font-size:11px;font-weight:600;color:var(--grey);text-align:left;border-bottom:1px solid var(--border)}
 .stbl td{padding:5px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
@@ -71,7 +98,7 @@ html.dark .qinp-hi{background:#3f0a0a;color:#fca5a5;border-color:#991b1b}
 .stbl select,.stbl input[type=number]{padding:4px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px}
 .stbl select{min-width:120px}
 .stbl input[type=number]{width:52px;text-align:center}
-.del-btn{padding:2px 8px;background:#fee2e2;color:var(--red);border:1px solid #fca5a5;border-radius:3px;cursor:pointer;font-size:11px}
+.del-btn{padding:0;width:28px;height:28px;background:#fee2e2;color:var(--red);border:1px solid #fca5a5;border-radius:4px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
 .cline{display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background .1s}
 .cline:last-child{border-bottom:none}
 .cline:hover{background:#f8f9ff}
@@ -84,8 +111,8 @@ html.dark .qinp-hi{background:#3f0a0a;color:#fca5a5;border-color:#991b1b}
 .pinp{width:62px;padding:3px 6px;border:1px solid #e2c97e;border-radius:4px;text-align:center;font-size:11px;color:#92400e;background:#fffbeb}
 .pinp:focus{outline:none;border-color:#b45309}
 .punit{font-size:10px;color:#b45309;width:20px}
-.subsec-hdr{background:#f1f5f9;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--blue2);border-top:1px solid #e2e8f0}
-.subsec-hdr:hover{background:#e2e8f0}
+.subsec-hdr{background:#f8f8f8;padding:0 20px;height:44px;font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#555555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid #e8e8e8}
+.subsec-hdr:hover{background:#efefef}
 .sublbl-vd{font-size:10px;color:#b45309;padding:4px 14px 2px;font-weight:600;background:#fffbeb;border-top:1px solid #fde68a}
 .sub-add{padding:5px 14px;display:flex;justify-content:flex-end;border-top:1px solid #f0f0f0}
 .btn-sub-add{font-size:11px;padding:4px 12px;background:#dbeafe;color:var(--blue2);border:1px solid #93c5fd;border-radius:5px;cursor:pointer;white-space:nowrap}
@@ -221,126 +248,144 @@ html.dark .map-result{background:linear-gradient(90deg,#0f172a,#1a0f2e);border-c
 html.dark .map-res-item strong{color:#e2e8f0}
 html.dark .map-grp-hdr{color:#93c5fd}
 html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
-/* ── SEGMON Redesign ─────────────────────────────────────────────────────── */
-/* Layout base */
+/* ── SEGMON Redesign — spec v2 ───────────────────────────────────────────── */
 html,body{height:100%;overflow:hidden;margin:0;padding:0}
-body{display:flex;background:var(--bg);font-size:13px;color:#222}
+body{display:flex;background:var(--bg);font-size:13px;color:#1a1a1a}
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 #sidebar{
-  width:210px;min-width:210px;flex-shrink:0;
-  background:linear-gradient(180deg,#252520 0%,#1c1c18 100%);
+  width:260px;min-width:260px;flex-shrink:0;
+  background:#1e1e1e;
   display:flex;flex-direction:column;
-  height:100vh;overflow:hidden;
-  box-shadow:2px 0 12px #00000040;
-  position:relative;z-index:10
+  height:100vh;overflow:hidden;position:relative;z-index:10
 }
 #sb-logo{
-  padding:14px 16px 12px;
-  display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid #333330;
-  background:#1a1a16;flex-shrink:0
+  height:64px;padding:0 20px;flex-shrink:0;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid #2a2a2a
 }
-#sb-logo img{height:34px;border-radius:3px;flex-shrink:0}
-#sb-logo span{font-size:13px;font-weight:700;color:#e8e8dc;letter-spacing:.3px;display:block}
-#sb-logo small{font-size:9px;color:#666;letter-spacing:.5px;text-transform:uppercase}
-#sb-nav{flex:1;overflow-y:auto;padding:6px 0;min-height:0}
+.sb-logo-circle{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--green);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;letter-spacing:-.3px
+}
+#sb-logo span{font-size:16px;font-weight:700;color:#fff;display:block;line-height:1.2}
+#sb-logo small{font-size:11px;color:#888;display:block}
+#sb-nav{flex:1;overflow-y:auto;padding:8px 0;min-height:0}
 #sb-nav::-webkit-scrollbar{width:3px}
-#sb-nav::-webkit-scrollbar-track{background:transparent}
-#sb-nav::-webkit-scrollbar-thumb{background:#444;border-radius:2px}
+#sb-nav::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
 .nav-link{
-  display:block;padding:9px 16px 9px 14px;
-  color:#8a8a7a;font-size:12px;cursor:pointer;
-  text-decoration:none;
-  border-left:3px solid transparent;
-  transition:background .1s,color .1s,border-color .1s;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  line-height:1.3
+  display:flex;align-items:center;height:44px;
+  padding:0 20px;gap:12px;
+  color:#b0b0b0;font-size:13px;cursor:pointer;
+  text-decoration:none;border-left:4px solid transparent;
+  transition:background .12s,color .12s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
-.nav-link:hover{background:#ffffff0d;color:#c8c8b4}
+.nav-link:hover{background:rgba(255,255,255,0.08);color:#e0e0e0}
 .nav-link.active{
-  background:#ffffff14;color:#d8e8a0;
-  border-left-color:var(--green);font-weight:600
+  background:#5a6e2a;color:#fff;
+  border-left-color:#a3c644;
+  padding-left:16px;font-weight:600
 }
 #sb-controls{
-  flex-shrink:0;padding:12px 14px 16px;
-  border-top:1px solid #2e2e28;background:#17170f
+  flex-shrink:0;padding:0 0 16px;
+  border-top:1px solid #333333
 }
 #sb-controls .sb-title{
-  font-size:9px;color:#555;text-transform:uppercase;
-  letter-spacing:.7px;margin-bottom:10px;font-weight:600
+  font-size:11px;color:#888;text-transform:uppercase;
+  letter-spacing:.5px;font-weight:600;
+  padding:14px 20px 6px
 }
-#sb-controls label{font-size:10px;color:#777;display:block;margin-bottom:3px}
+#sb-controls label{
+  font-size:11px;color:#888;font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;
+  display:block;margin-bottom:6px;padding:0 20px
+}
+#sb-controls label:not(:first-of-type){margin-top:4px}
 #sb-controls input[type=number]{
-  width:100%;padding:6px 8px;
-  border:1px solid #3a3a30;border-radius:5px;
-  background:#22221a;color:#d0d0c0;font-size:13px;
-  margin-bottom:10px;outline:none;transition:border-color .15s
+  display:block;width:calc(100% - 40px);margin:0 20px;
+  height:36px;padding:0 12px;
+  border:1px solid #444;border-radius:4px;
+  background:#2a2a2a;color:#fff;font-size:13px;
+  margin-bottom:12px;outline:none;transition:border-color .15s;
+  font-family:inherit
 }
 #sb-controls input[type=number]:focus{border-color:var(--green)}
-.sb-ht-title{font-size:10px;color:#777;margin-bottom:5px}
-.sb-ht{display:flex;gap:6px;margin-top:0}
+.sb-ht-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;font-weight:600;padding:0 20px;margin-bottom:8px}
+.sb-ht{display:flex;gap:8px;padding:0 20px}
 .sb-ht label{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
-  background:#22221a;border:1px solid #3a3a30;border-radius:5px;
-  padding:5px 4px;font-size:11px;color:#888;cursor:pointer;transition:all .15s
+  flex:1;display:flex;align-items:center;gap:8px;height:36px;
+  background:transparent;border:0;border-radius:0;
+  padding:0;font-size:13px;color:#b0b0b0;
+  cursor:pointer;margin-bottom:0;
+  text-transform:none;letter-spacing:0;
+  justify-content:flex-start
 }
-.sb-ht label:has(input:checked){background:#2a3a12;border-color:var(--dgreen);color:#b8d870}
-.sb-ht input{accent-color:var(--green);width:11px;height:11px}
+.sb-ht input[type=radio]{
+  appearance:none;-webkit-appearance:none;
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid #666;background:transparent;
+  cursor:pointer;flex-shrink:0;transition:all .15s;
+  display:flex;align-items:center;justify-content:center
+}
+.sb-ht input[type=radio]:checked{background:var(--green);border-color:var(--green);
+  box-shadow:inset 0 0 0 3px #1e1e1e}
 
 /* ── App wrap ────────────────────────────────────────────────────────────── */
 #app-wrap{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
 
-/* ── Topbar ──────────────────────────────────────────────────────────────── */
+/* ── Topbar / Header ─────────────────────────────────────────────────────── */
 #topbar{
-  background:var(--dgreen);color:#fff;
-  padding:0 20px;height:52px;flex-shrink:0;
-  display:flex;align-items:center;gap:0;
-  box-shadow:0 2px 10px #00000035
+  background:#5a6e2a;color:#fff;
+  height:64px;flex-shrink:0;
+  display:flex;align-items:center;
+  padding:0 32px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1)
 }
 .tb-chip{
   display:flex;flex-direction:column;justify-content:center;
-  padding:0 20px;height:100%;
-  border-right:1px solid #ffffff25
+  padding:0 24px;height:100%;
+  border-right:1px solid rgba(255,255,255,0.2);
+  border-left:1px solid rgba(255,255,255,0.2);
+  margin-left:-1px
 }
-.tb-chip:first-child{border-left:1px solid #ffffff25}
-.tb-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.7px;opacity:.65;margin-bottom:1px}
-.tb-val{font-size:17px;font-weight:700}
-.tb-chip.tb-total{background:#00000018}
-.tb-chip.tb-total .tb-val{color:#FFE500;font-size:19px}
+.tb-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,0.6);margin-bottom:2px}
+.tb-val{font-size:20px;font-weight:700;color:#ffd700}
+.tb-chip.tb-total .tb-val{font-size:24px}
 .tb-sep{flex:1}
 .tb-reset{
-  padding:7px 16px;background:#00000030;
-  border:1px solid #ffffff35;color:#fff;border-radius:5px;
-  cursor:pointer;font-size:12px;font-weight:500;transition:background .15s
+  padding:6px 16px;background:transparent;
+  border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:4px;
+  cursor:pointer;font-size:13px;font-family:inherit;
+  transition:background .15s
 }
-.tb-reset:hover{background:#00000050}
+.tb-reset:hover{background:rgba(255,255,255,0.1)}
 
 /* ── Sections ────────────────────────────────────────────────────────────── */
-#sections{flex:1;overflow-y:auto;padding:0;min-height:0;background:var(--bg)}
+#sections{flex:1;overflow-y:auto;background:var(--bg);min-height:0}
 .section{display:none}
-.section.active{display:block;padding:18px 24px;max-width:920px}
+.section.active{display:block;padding:32px}
+.section-inner{max-width:900px;margin:0 auto}
 .section .cbody{display:block !important}
 .section .chdr .chev{display:none}
 .section .chdr{cursor:default}
-/* Card overrides */
-.chdr{background:var(--dgreen) !important;font-size:12px;letter-spacing:.4px}
-.card{border-radius:8px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 6px #00000018;border:1px solid #e0e4d8}
 
-/* Input refinements */
-.qinp,.sub-num{
-  background:#fff;border:1.5px solid #c8d0b8;border-radius:5px;
-  color:#1a1a1a;font-size:13px;font-weight:600;text-align:center;
-  transition:border-color .15s
+/* ── Card overrides ──────────────────────────────────────────────────────── */
+.chdr{
+  background:#7a9c2d !important;color:#fff !important;
+  height:48px;padding:0 20px;
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  display:flex;align-items:center
 }
-.qinp:focus,.sub-num:focus{border-color:var(--dgreen);outline:none}
-input[type=number]:not(.qinp):not(.sub-num){
-  border:1.5px solid #c8d4b0;border-radius:5px;
-  background:#fff;color:#1a1a1a;padding:5px 8px;font-size:12.5px
+.card{
+  background:#fff;border-radius:0;overflow:hidden;margin-bottom:16px;
+  border:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.05)
 }
-input[type=number]:not(.qinp):not(.sub-num):focus{border-color:var(--dgreen);outline:none}
 
-/* Override old rules */
+/* ── Override old rules ──────────────────────────────────────────────────── */
 header{display:none}
 .layout,.footer-credits{display:none}
 #rbar{display:none}
@@ -393,6 +438,7 @@ header{display:none}
   <div id="sections">
 
 <div class="section" id="sec-geral">
+<div class="section-inner">
 <div class="card">
   <div class="chdr" style="background:var(--dgreen)">⚙ Configurações e Andaime</div>
   <div class="cbody">
@@ -417,10 +463,12 @@ header{display:none}
   </div>
   <div class="infobox"><b>Execução</b> = M.O. montagem + M.O. instalação (bases, lig., enfiamento, ensaios) × (1 + extra%) &nbsp;|&nbsp; <b>Insumos</b> = custo material (cabo, tubo, calha)</div>
 </div>
+</div>
   </div>
 </div>
 </div>
 <div class="section" id="sec-sadi">
+<div class="section-inner">
 <div class="card" id="card-cent">
   <div class="chdr closed" onclick="tog('cent')">Central de Incêndio</div>
   <div class="cbody hidden" id="body-cent">
@@ -443,6 +491,7 @@ header{display:none}
       <div style="font-size:10.5px;color:var(--grey);margin-top:6px">ℹ Fixação da central = <b>nº detetores (auto)</b> × 600s · Programação = 1 por central × 60s</div>
     </div>
   </div>
+</div>
 </div>
 
 <div class="card" id="card-sadi">
@@ -468,6 +517,7 @@ header{display:none}
 </div>
 
 <div class="section" id="sec-saie">
+<div class="section-inner">
 <div class="card" id="card-saie">
   <div class="chdr closed" onclick="tog('saie')">SAIE — Iluminação de Emergência <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-saie">
@@ -487,10 +537,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-ext">
+<div class="section-inner">
 <div class="card" id="card-ext">
   <div class="chdr closed" onclick="tog('ext')">Extinção <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-ext">
@@ -507,10 +559,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-spv">
+<div class="section-inner">
 <div class="card" id="card-spv">
   <div class="chdr closed" onclick="tog('spv')">SPV — Sistema de Proteção de Vão <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-spv">
@@ -527,10 +581,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-ria">
+<div class="section-inner">
 <div class="card" id="card-ria">
   <div class="chdr closed" onclick="tog('ria')">RIA / CIAS — Rede de Incêndio Armada <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-ria">
@@ -547,10 +603,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-desfum">
+<div class="section-inner">
 <div class="card" id="card-desfum">
   <div class="chdr closed" onclick="tog('desfum')">Desenfumagem — Controlo de Extração de Fumo <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-desfum">
@@ -570,10 +628,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-gas">
+<div class="section-inner">
 <div class="card" id="card-gas">
   <div class="chdr closed" onclick="tog('gas')">Deteção de Gás — Natural e Butano/Propano <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-gas">
@@ -593,10 +653,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-co">
+<div class="section-inner">
 <div class="card" id="card-co">
   <div class="chdr closed" onclick="tog('co')">Deteção de CO — Monóxido de Carbono <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-co">
@@ -616,10 +678,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-ajax">
+<div class="section-inner">
 <div class="card" id="card-ajax">
   <div class="chdr closed" onclick="tog('ajax')">Ajax — Sistema Sem Fio <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-ajax">
@@ -638,8 +702,10 @@ header{display:none}
   </div>
 </div>
 </div>
+</div>
 
 <div class="section" id="sec-sinais">
+<div class="section-inner">
 <div class="card" id="card-sinais-emerg">
   <div class="chdr closed" onclick="tog('sinais-emerg')" style="background:#1a6b3a">Sinais Emergência — Saídas &amp; Vias Evacuação <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-sinais-emerg">
@@ -662,6 +728,7 @@ header{display:none}
       <div class="sub-add"><button class="btn-sub-add" onclick="addSysExtra('emerg')">+ Trabalho</button></div>
     </div>
   </div>
+</div>
 </div>
 
 <div class="card" id="card-sinais-inc">
@@ -692,6 +759,7 @@ header{display:none}
 </div>
 
 <div class="section" id="sec-ia">
+<div class="section-inner">
 <div class="card" id="card-ai">
   <div class="chdr closed" onclick="tog('ai')">Leitura de Relatório — Geração Automática de Orçamento <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-ai">
@@ -721,8 +789,10 @@ header{display:none}
   </div>
 </div>
 </div>
+</div>
 
 <div class="section" id="sec-map">
+<div class="section-inner">
 <div class="card" id="card-map">
   <div class="chdr closed" onclick="tog('map')" style="background:#4b1a6b">MAP — Medidas de Autoprotecção <span class="chev">▼</span></div>
   <div class="cbody hidden" id="body-map">
@@ -851,10 +921,12 @@ header{display:none}
     </div>
   </div>
 </div>
+</div>
 
 </div>
 
 <div class="section" id="sec-email">
+<div class="section-inner">
 <div class="card" id="email-card">
   <div class="chdr closed" style="cursor:default">Email de Orçamento Interno</div>
   <div class="etbar">
@@ -864,6 +936,7 @@ header{display:none}
     <span style="font-size:11px;color:var(--grey);margin-left:auto">Texto pronto a colar — sem nomes pessoais</span>
   </div>
   <pre id="eout" style="color:#94a3b8;font-style:italic">← Preencha os equipamentos e clique "Gerar Email"</pre>
+</div>
 </div>
 </div>
 
