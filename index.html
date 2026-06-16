@@ -230,7 +230,7 @@ body{display:flex;flex-direction:row;background:var(--bg);font-size:13px;color:#
 #sb-logo span{font-size:13.5px;font-weight:700;color:#fff;line-height:1.2}
 #sb-logo small{font-size:9.5px;color:#888;display:block}
 #sb-nav{flex:1;padding:6px 0;overflow-y:auto}
-.nav-link{display:flex;align-items:center;gap:8px;padding:8px 16px;color:#a0a090;font-size:12.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:background .12s,color .12s;user-select:none}
+.nav-link{display:block;padding:8px 16px 8px 18px;color:#a0a090;font-size:12.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:background .12s,color .12s;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-link:hover{background:#ffffff12;color:#ddd}
 .nav-link.active{background:#ffffff1a;color:#fff;border-left-color:var(--green);font-weight:600}
 .nav-link .ni{font-size:13px;min-width:18px;text-align:center;opacity:.8}
@@ -254,7 +254,7 @@ body{display:flex;flex-direction:row;background:var(--bg);font-size:13px;color:#
 .tb-reset{padding:6px 14px;background:#00000030;border:1px solid #ffffff40;color:#fff;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
 .tb-reset:hover{background:#00000050}
 #sections{flex:1;overflow-y:auto;padding:14px 18px}
-.section{display:none}
+.section{display:none;max-width:860px;margin:0 auto}
 .section.active{display:block}
 .section .cbody{display:block !important}
 .section .chdr .chev{display:none}
@@ -273,21 +273,20 @@ header{display:none}
     <div><span>SEGMON</span><small>Orçamentação SCIE</small></div>
   </div>
   <nav id="sb-nav">
-    <a class="nav-link" data-sec="geral" onclick="showSec('geral');return false;" href="#"><span class="ni">⚙</span>Configurações</a>
-<a class="nav-link" data-sec="cent" onclick="showSec('cent');return false;" href="#"><span class="ni">🏠</span>Central Incêndio</a>
-<a class="nav-link" data-sec="sadi" onclick="showSec('sadi');return false;" href="#"><span class="ni">📡</span>SADI — Detecção</a>
-<a class="nav-link" data-sec="saie" onclick="showSec('saie');return false;" href="#"><span class="ni">💡</span>SAIE — Iluminação</a>
-<a class="nav-link" data-sec="ext" onclick="showSec('ext');return false;" href="#"><span class="ni">🧯</span>Extintores</a>
-<a class="nav-link" data-sec="spv" onclick="showSec('spv');return false;" href="#"><span class="ni">💧</span>Sprinklers</a>
-<a class="nav-link" data-sec="ria" onclick="showSec('ria');return false;" href="#"><span class="ni">🚒</span>RIA</a>
-<a class="nav-link" data-sec="desfum" onclick="showSec('desfum');return false;" href="#"><span class="ni">💨</span>Desenfumagem</a>
-<a class="nav-link" data-sec="gas" onclick="showSec('gas');return false;" href="#"><span class="ni">⚠</span>Gás</a>
-<a class="nav-link" data-sec="co" onclick="showSec('co');return false;" href="#"><span class="ni">☁</span>CO</a>
-<a class="nav-link" data-sec="ajax" onclick="showSec('ajax');return false;" href="#"><span class="ni">🔐</span>Ajax Security</a>
-<a class="nav-link" data-sec="sinais" onclick="showSec('sinais');return false;" href="#"><span class="ni">🔷</span>Sinalização</a>
-<a class="nav-link" data-sec="map" onclick="showSec('map');return false;" href="#"><span class="ni">📋</span>MAPs</a>
-<a class="nav-link" data-sec="ia" onclick="showSec('ia');return false;" href="#"><span class="ni">🤖</span>IA / Relatório</a>
-<a class="nav-link" data-sec="email" onclick="showSec('email');return false;" href="#"><span class="ni">📧</span>E-mail</a>
+    <a class="nav-link" data-sec="geral" onclick="showSec('geral');return false;" href="#">Configurações</a>
+<a class="nav-link" data-sec="sadi" onclick="showSec('sadi');return false;" href="#">SADI — Central + Deteção</a>
+<a class="nav-link" data-sec="saie" onclick="showSec('saie');return false;" href="#">SAIE — Iluminação</a>
+<a class="nav-link" data-sec="ext" onclick="showSec('ext');return false;" href="#">Extintores</a>
+<a class="nav-link" data-sec="spv" onclick="showSec('spv');return false;" href="#">Sprinklers</a>
+<a class="nav-link" data-sec="ria" onclick="showSec('ria');return false;" href="#">RIA</a>
+<a class="nav-link" data-sec="desfum" onclick="showSec('desfum');return false;" href="#">Desenfumagem</a>
+<a class="nav-link" data-sec="gas" onclick="showSec('gas');return false;" href="#">Gás</a>
+<a class="nav-link" data-sec="co" onclick="showSec('co');return false;" href="#">CO</a>
+<a class="nav-link" data-sec="ajax" onclick="showSec('ajax');return false;" href="#">Ajax Security</a>
+<a class="nav-link" data-sec="sinais" onclick="showSec('sinais');return false;" href="#">Sinalização</a>
+<a class="nav-link" data-sec="map" onclick="showSec('map');return false;" href="#">MAPs</a>
+<a class="nav-link" data-sec="ia" onclick="showSec('ia');return false;" href="#">IA / Relatório</a>
+<a class="nav-link" data-sec="email" onclick="showSec('email');return false;" href="#">E-mail</a>
   </nav>
   <div id="sb-controls">
     <div class="sb-title">Parâmetros Globais</div>
@@ -341,9 +340,9 @@ header{display:none}
   </div>
 </div>
 </div>
-<div class="section" id="sec-cent">
+<div class="section" id="sec-sadi">
 <div class="card" id="card-cent">
-  <div class="chdr closed" onclick="tog('cent')">Central de Incêndio <span class="chev">▼</span></div>
+  <div class="chdr closed" onclick="tog('cent')">Central de Incêndio</div>
   <div class="cbody hidden" id="body-cent">
     <div class="cblock">
       <label>Tipo, dimensão e nº de detetores do sistema</label>
@@ -366,11 +365,8 @@ header{display:none}
   </div>
 </div>
 
-</div>
-
-<div class="section" id="sec-sadi">
 <div class="card" id="card-sadi">
-  <div class="chdr closed" onclick="tog('sadi')">SADI — Deteção de Incêndio <span class="chev">▼</span></div>
+  <div class="chdr closed" onclick="tog('sadi')">SADI — Deteção de Incêndio</div>
   <div class="cbody hidden" id="body-sadi">
     <div id="eq-sadi"></div>
     <div class="subsec-hdr" onclick="togSub('ins-sadi')">Cabos e Insumos <span id="arr-ins-sadi">▶</span></div>
@@ -855,6 +851,7 @@ const EQ_EXT=[
   {id:'fita',      name:'Fita Intumescente (metro)',  mk:'fita',     inst:{},       email:'fita intumescente',             sec:'SPV', unitEmail:'m'},
 ];
 const EQ_DESFUM=[
+  {id:'desfum-central', name:'Central de Desenfumagem',             mk:'central_desfum',inst:{base:0,lig:1,det:0,ensaio:1}, email:'central de desenfumagem'},
   {id:'desfum-boton',  name:'Botão Manual de Acionamento',    mk:'botoneira',   inst:{base:1,lig:1,det:0,ensaio:1}, email:'botões manuais desenfumagem'},
   {id:'desfum-motor',  name:'Motor Atuador de Damper',         mk:'motor_damper',inst:{base:0,lig:1,det:0,ensaio:1}, email:'motores atuadores de damper'},
   {id:'desfum-damper', name:'Damper Corta-Fugas',              mk:'damper',      inst:{base:0,lig:0,det:0,ensaio:1}, email:'dampers corta-fugas'},
