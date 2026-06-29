@@ -508,7 +508,8 @@ html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
   <div class="cbody hidden" id="body-sinais-inc">
     <div class="stbar">
       <button class="btn-add" onclick="addSinal('inc')">+ Adicionar Sinal</button>
-      <span style="font-size:11px;color:var(--grey)">Sinais vermelhos — P0400 a P0954</span>
+      <button class="btn-add" onclick="suggestSignals()" style="background:#1a4d2e;margin-left:6px">Sugerir por Equipamentos</button>
+      <span style="font-size:11px;color:var(--grey)">Sinais vermelhos — P0400 a P0957</span>
     </div>
     <table class="stbl">
       <thead><tr><th>Designação</th><th style="width:68px">Tipo</th><th style="width:98px">Tamanho</th><th style="width:54px">Qtd.</th><th style="width:64px">M.O.</th><th style="width:28px"></th></tr></thead>
@@ -709,7 +710,7 @@ html.dark .map-sel-all{color:#93c5fd;border-color:#2563a8}
 const MONT={
   det_incendio:{lo:15,hi:30},botoneira:{lo:15,hi:30},sirene:{lo:15,hi:30},
   sinalizador:{lo:15,hi:15},det_gas:{lo:15,hi:15},ilum_emerg:{lo:15,hi:30},
-  extintor:{lo:10,hi:10},agulheta:{lo:10,hi:10},mola:{lo:40,hi:40},
+  extintor:{lo:10,hi:10},manta:{lo:10,hi:10},agulheta:{lo:10,hi:10},mola:{lo:40,hi:40},
   seletor:{lo:40,hi:40},fecho_pcf:{lo:30,hi:30},barra:{lo:60,hi:60},
   puxador:{lo:15,hi:15},fita:{lo:1,hi:1},
   sinal_1face:{lo:8,hi:12},sinal_2faces:{lo:15,hi:25},sinal_excel:{lo:30,hi:30},
@@ -754,6 +755,7 @@ const EQ_EXT=[
   {id:'ext-co2-2', name:'Extintores CO2 2kg',         mk:'extintor', inst:{},       email:'extintores CO2 2kg',            sec:'EXTINÇÃO'},
   {id:'ext-co2-5', name:'Extintores CO2 5kg',         mk:'extintor', inst:{},       email:'extintores CO2 5kg',            sec:'EXTINÇÃO'},
   {id:'ext-po',    name:'Extintores Pó Químico ABC',  mk:'extintor', inst:{},       email:'extintores pó químico ABC',     sec:'EXTINÇÃO'},
+  {id:'manta',     name:'Manta Ignífuga',             mk:'manta',    inst:{},       email:'mantas ignífugas',              sec:'EXTINÇÃO'},
   {id:'agulheta',  name:'Agulheta 25/45',             mk:'agulheta', inst:{lig:1},  email:'agulheta 25/45',                sec:'EXTINÇÃO'},
   {id:'mola',      name:'Molas Aéreas',               mk:'mola',     inst:{},       email:'molas aéreas',                  sec:'SPV'},
   {id:'seletor',   name:'Seletor de Fecho',           mk:'seletor',  inst:{},       email:'seletores de fecho',            sec:'SPV'},
@@ -794,27 +796,31 @@ const EQ_RIA=[
 ];
 // Sinais de Emergência (verde) — saídas e vias de evacuação
 const SINAIS_EMERG=[
-  {code:'P0001',label:'Subir Escadas Esquerda',         tipos:['1'],        sizes:['200x100','300x150','400x200','600x300']},
-  {code:'P0002',label:'Subir Escadas Direita',          tipos:['1'],        sizes:['200x100','300x150','400x200','600x300']},
-  {code:'P0004',label:'Descer Escadas Direita',         tipos:['1'],        sizes:['200x100','300x150','400x200','600x300']},
-  {code:'P0005',label:'Descer Escadas Esquerda',        tipos:['1'],        sizes:['200x100','300x150','400x200','600x300']},
+  {code:'P0001',label:'Subir Escadas Esquerda',         tipos:['1','3'],    sizes:['200x100','300x150','400x200','600x300']},
+  {code:'P0002',label:'Subir Escadas Direita',          tipos:['1','3'],    sizes:['200x100','300x150','400x200','600x300']},
+  {code:'P0004',label:'Descer Escadas Direita',         tipos:['1','3'],    sizes:['200x100','300x150','400x200','600x300']},
+  {code:'P0005',label:'Descer Escadas Esquerda',        tipos:['1','3'],    sizes:['200x100','300x150','400x200','600x300']},
   {code:'P0008',label:'Saída para Esquerda',            tipos:['1','2','3'],sizes:['200x100','300x150','400x200','600x300']},
   {code:'P0009',label:'Saída para Direita',             tipos:['1','2','3'],sizes:['200x100','300x150','400x200','600x300']},
   {code:'P0010',label:'Porta de Saída',                 tipos:['1','3'],    sizes:['200x100','300x150','400x200','600x300']},
   {code:'P0012',label:'Saída em Frente',                tipos:['2','3'],    sizes:['300x150','400x200']},
-  {code:'P0248',label:'Desbloqueio Porta Emergência',   tipos:['1'],        sizes:['100x150','150x150','200x300','300x400','400x600']},
+  {code:'P0248',label:'Desbloqueio Porta Emergência',   tipos:['1','3'],    sizes:['100x150','150x150','200x300','300x400','400x600']},
 ];
 // Sinais de Incêndio (vermelho) — equipamentos e sistemas
 const SINAIS_INC=[
-  {code:'P0400',label:'Extintor Portátil',              tipos:['1','P'],    sizes:['150x150','200x200','300x300','400x400','600x600']},
-  {code:'P0401',label:'Extintor Móvel',                 tipos:['1','P'],    sizes:['150x150','200x200','300x300','400x400','600x600']},
-  {code:'P0505',label:'Área c/ Sistema Extinção Fixo',  tipos:['1'],        sizes:['150x200','200x300','300x400','400x600']},
-  {code:'P0585',label:'Ativar Extinção Automática',     tipos:['1'],        sizes:['100x150','150x200','200x300','300x400','400x600']},
-  {code:'P0586',label:'Bloquear Extinção Automática',   tipos:['1'],        sizes:['100x150','150x200','200x300','300x400','400x600']},
-  {code:'P0787',label:'Central Bombagem Incêndio',      tipos:['1'],        sizes:['200x100','300x150','400x200']},
-  {code:'P0794',label:'Central de Incêndio',            tipos:['1'],        sizes:['200x100','300x150','400x200']},
-  {code:'P0952',label:'Boca de Incêndio Carretel (Pan.)',tipos:['P'],       sizes:['100x100','150x150','200x200','300x300']},
-  {code:'P0954',label:'Botoneira de Alarme (Pan.)',     tipos:['P'],        sizes:['100x100','150x150','200x200','300x300']},
+  {code:'P0400',label:'Extintor Portátil',                  tipos:['1','2','3','P'],sizes:['150x150','200x200','300x300','400x400','600x600']},
+  {code:'P0401',label:'Extintor Móvel',                     tipos:['1','P'],        sizes:['150x150','200x200','300x300','400x400','600x600']},
+  {code:'P0403',label:'Manta Ignífuga',                     tipos:['1','P'],        sizes:['150x150','200x200','300x300','400x400']},
+  {code:'P0505',label:'Área c/ Sistema Extinção Fixo',      tipos:['1'],            sizes:['150x200','200x300','300x400','400x600']},
+  {code:'P0585',label:'Ativar Extinção Automática',         tipos:['1'],            sizes:['100x150','150x200','200x300','300x400','400x600']},
+  {code:'P0586',label:'Bloquear Extinção Automática',       tipos:['1'],            sizes:['100x150','150x200','200x300','300x400','400x600']},
+  {code:'P0787',label:'Central Bombagem Incêndio',          tipos:['1'],            sizes:['200x100','300x150','400x200']},
+  {code:'P0794',label:'Central de Incêndio',                tipos:['1'],            sizes:['200x100','300x150','400x200']},
+  {code:'P0951',label:'Boca de Incêndio Armário (BIC)',     tipos:['1','P'],        sizes:['150x150','200x200','300x300']},
+  {code:'P0952',label:'Boca de Incêndio Carretel',          tipos:['1','P'],        sizes:['100x100','150x150','200x200','300x300']},
+  {code:'P0953',label:'Botão Manual de Alarme',             tipos:['1'],            sizes:['100x100','150x150','200x200']},
+  {code:'P0954',label:'Botoneira de Alarme',                tipos:['1','P'],        sizes:['100x100','150x150','200x200','300x300']},
+  {code:'P0957',label:'Botão Acionamento Desenfumagem',     tipos:['1'],            sizes:['100x150','150x200','200x300']},
 ];
 const CABOS=[
   {id:'lih-2x1',   c:0.83,u:'m',eml:'CABO LIH (st) H FE180 PH120 2x1',             sec:'SADI'},
@@ -1059,6 +1065,57 @@ function getSn(rid){
 function delSn(rid){document.getElementById('sr-'+rid)?.remove();recalc();}
 function snMk(tp){return(tp==='2'||tp==='3'||tp==='P')?'sinal_2faces':'sinal_1face';}
 
+// Maps equipment id → {grupo, code, tipo, size}
+const EQ_SIG_MAP=[
+  {eqId:'ext-afff',   grupo:'inc',code:'P0400',tipo:'1',size:'200x200'},
+  {eqId:'ext-afff25', grupo:'inc',code:'P0400',tipo:'1',size:'200x200'},
+  {eqId:'ext-co2-2',  grupo:'inc',code:'P0400',tipo:'1',size:'200x200'},
+  {eqId:'ext-co2-5',  grupo:'inc',code:'P0400',tipo:'1',size:'200x200'},
+  {eqId:'ext-po',     grupo:'inc',code:'P0400',tipo:'1',size:'200x200'},
+  {eqId:'manta',      grupo:'inc',code:'P0403',tipo:'1',size:'200x200'},
+  {eqId:'agulheta',   grupo:'inc',code:'P0951',tipo:'1',size:'200x200'},
+  {eqId:'bic-carretel',grupo:'inc',code:'P0952',tipo:'P',size:'200x200'},
+  {eqId:'bic-parede', grupo:'inc',code:'P0951',tipo:'1',size:'200x200'},
+  {eqId:'boton',      grupo:'inc',code:'P0954',tipo:'P',size:'150x150'},
+  {eqId:'desfum-boton',grupo:'inc',code:'P0957',tipo:'1',size:'150x200'},
+];
+function addSnPreset(grupo,code,tipo,size,qty){
+  const cat=grupo==='inc'?SINAIS_INC:SINAIS_EMERG;
+  const idx=cat.findIndex(s=>s.code===code);
+  if(idx<0)return;
+  addSinal(grupo);
+  const rid=snId;
+  const lEl=document.getElementById('ss-l-'+rid);
+  if(lEl){lEl.value=idx;updSn(rid);}
+  const tEl=document.getElementById('ss-t-'+rid);
+  if(tEl){tEl.value=tipo;updSnSz(rid);}
+  const sEl=document.getElementById('ss-s-'+rid);
+  if(sEl)sEl.value=size;
+  const qEl=document.getElementById('ss-q-'+rid);
+  if(qEl)qEl.value=qty;
+  recalc();
+}
+function suggestSignals(){
+  let added=0;
+  EQ_SIG_MAP.forEach(m=>{
+    const qty=parseInt(document.getElementById('q-'+m.eqId)?.value)||0;
+    if(!qty)return;
+    const cat=m.grupo==='inc'?SINAIS_INC:SINAIS_EMERG;
+    const idx=cat.findIndex(s=>s.code===m.code);
+    if(idx<0)return;
+    const bodyId=m.grupo==='inc'?'sb-inc':'sb-emerg';
+    const already=[...document.querySelectorAll('#'+bodyId+' tr')].some(tr=>{
+      const rid=tr.id.replace('sr-','');
+      const lEl=document.getElementById('ss-l-'+rid);
+      return lEl&&parseInt(lEl.value)===idx;
+    });
+    if(already)return;
+    addSnPreset(m.grupo,m.code,m.tipo,m.size,qty);
+    added++;
+  });
+  if(!added)alert('Nenhum sinal novo a sugerir (já adicionados ou sem equipamentos).');
+}
+
 // ── Per-system sub-sections ───────────────────────────────────────────────────
 function togSub(id){
   const el=document.getElementById('sub-'+id);
@@ -1178,6 +1235,56 @@ function computeSys(sysId,rate,extra,h){
   // Extras
   getSysExtras(sysId).forEach(ex=>{if(!ex.qty)return;montSecs+=ex.qty*ex.time*60;if(ex.price>0)insMat+=ex.qty*ex.price;});
   return{montSecs,instSecs,insMat};
+}
+
+function computeSysBreakdown(sysId,rate,extra,h){
+  const sys=SYS_LIST.find(s=>s.id===sysId);if(!sys)return[];
+  const ep=1+extra/100;
+  const steps=[];
+  function step(label,secs){
+    if(secs<=0)return;
+    const hrs=ceilH(secs/3600);
+    steps.push({label,hrs,cost:ceilE(hrs*rate*ep)});
+  }
+  // Montagem
+  let montSecs=0;
+  sys.eqs().forEach(it=>{
+    const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;if(!qty)return;
+    const m=MONT[it.mk];
+    if(m.lo!==m.hi){const qhi=Math.min(qty,parseFloat(document.getElementById('qhi-'+it.id)?.value)||0);montSecs+=(qty-qhi)*m.lo*60+qhi*m.hi*60;}
+    else montSecs+=qty*m.lo*60;
+  });
+  if(sysId==='sadi'){const nC=parseInt(document.getElementById('q-central')?.value)||0;if(nC>0)montSecs+=nC*90*60;}
+  if(sys.sigGroup){document.querySelectorAll(`#sb-${sys.sigGroup} tr`).forEach(tr=>{const rid=tr.id.replace('sr-','');const r=getSn(rid);if(!r||!r.qty)return;const m=MONT[snMk(r.tp)],mT=h==='hi'?m.hi:m.lo;montSecs+=r.qty*mT*60;});}
+  getSysExtras(sysId).forEach(ex=>{if(ex.qty)montSecs+=ex.qty*ex.time*60;});
+  step('Montagem de equipamentos',montSecs);
+  // Installation steps
+  let basesSecs=0,ligSecs=0,detSecs=0,ensaiosSecs=0;
+  sys.eqs().forEach(it=>{
+    const qty=parseFloat(document.getElementById('q-'+it.id)?.value)||0;if(!qty)return;
+    if(it.inst.base)basesSecs+=qty*INST.fixacao_bases;
+    if(it.inst.lig)ligSecs+=qty*INST.ligacoes;
+    if(it.inst.det)detSecs+=qty*INST.colocacao_det;
+    if(it.inst.ensaio)ensaiosSecs+=qty*INST.ensaios;
+  });
+  if(sys.sigGroup){document.querySelectorAll(`#sb-${sys.sigGroup} tr`).forEach(tr=>{const rid=tr.id.replace('sr-','');const r=getSn(rid);if(!r||!r.qty)return;ensaiosSecs+=r.qty*INST.ensaios;});}
+  step('Fixação de bases',basesSecs);
+  step('Ligações elétricas',ligSecs);
+  step('Colocação de detetores',detSecs);
+  if(sysId==='sadi'){
+    const nC=parseInt(document.getElementById('q-central')?.value)||0;
+    const nDS=EQ_SADI.filter(it=>it.inst.det).reduce((s,it)=>s+(parseInt(document.getElementById('q-'+it.id)?.value)||0),0);
+    if(nC>0){step('Fixação da central',nDS*INST.fixacao_central);step('Ligação e programação da central',nC*(INST.lig_central+INST.prog_central));}
+  }
+  let cableM=0;
+  sys.cables().forEach(it=>{const qty=parseFloat(document.getElementById('c-'+it.id)?.value)||0;cableM+=qty;});
+  getSysInsumos(sysId).forEach(ins=>{if(ins.unit==='m'&&ins.qty>0)cableM+=ins.qty;});
+  step('Enfiamento de cabo',cableM*INST.enfiamento);
+  let vdM=0;
+  if(!sys.noVD){[...TUBOS_VD,...ISOGRIS].forEach(it=>{const uid=`vd${sysId}-${it.id}`;const qty=parseFloat(document.getElementById('c-'+uid)?.value)||0;vdM+=qty;});}
+  step('Passagem de VD/calha',vdM*INST.passagem_vd);
+  step('Ensaios',ensaiosSecs);
+  return steps;
 }
 
 // ── Compute ────────────────────────────────────────────────────────────────────
@@ -1358,6 +1465,13 @@ function genEmail(){
     lines.push(sys.emailTag);
     secLines.forEach(l=>lines.push(l));
 
+    // Per-step breakdown
+    const breakdown=computeSysBreakdown(sys.id,rate,extra,h);
+    if(breakdown.length>0){
+      lines.push('');
+      breakdown.forEach(s=>lines.push(`  · ${s.label}: ${fmtH(s.hrs)} — ${fmtEC(s.cost)}`));
+    }
+
     // Per-system M.O. and Insumos
     const sysH=ceilH((sr.montSecs+sr.instSecs)/3600);
     const sysMO=ceilE(sysH*rate*ep);
@@ -1425,7 +1539,8 @@ function renderEmail(lines,grey){
   lines.forEach(l=>{
     const s=document.createElement('span');
     if(/^(SADI|SAIE|SINAL|SINAL INCÊNDIO|EXTINÇÃO|SPV|RIA\/CIAS|DESENFUMAGEM|DETEÇÃO GÁS|DETEÇÃO CO|AJAX SEM FIO|MATERIAIS|EXTRAS|MAP — MEDIDAS DE AUTOPROTECÇÃO)$/.test(l.trim()))s.style.cssText='color:#7db8f7;font-weight:bold';
-    else if(/^\s{2}(M\.O\.|Insumos|·)/.test(l))s.style.cssText='color:#86efac;font-size:12px';
+    else if(/^\s{2}·/.test(l))s.style.cssText='color:#a5b4fc;font-size:12px';
+    else if(/^\s{2}(M\.O\.|Insumos)/.test(l))s.style.cssText='color:#86efac;font-size:12px';
     else if(/^(Mão de Obra|Custo Insumos|Total Geral|Total MAP|M\.O\. MAP|Tempo MAP|Extras MAP)/.test(l))s.style.cssText='color:#4ade80;font-weight:600';
     else if(/^CABO/.test(l))s.style.cssText='color:#fbbf24';
     else if(grey)s.style.cssText='color:#94a3b8';
@@ -1660,6 +1775,7 @@ function updAndaime(){
 function pad(n){return String(n).padStart(2,'0');}
 function ceilH(v){return Math.ceil(v||0);}
 function ceilE(v){return Math.ceil(v||0);}
+function fmtH(h){if(!h||h<=0)return'—';const hrs=Math.floor(h),mins=Math.round((h-hrs)*60);if(hrs===0)return mins+'min';if(mins===0)return hrs+'h';return hrs+'h'+mins;}
 function fmtEC(v){return ceilE(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';}
 function ceil10(v){return Math.ceil((v||0)/10)*10;}
 function fmtC10(v){return ceil10(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';}
