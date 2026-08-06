@@ -50,6 +50,35 @@ header .v{font-size:10px;color:#aac4f0;margin-left:auto}
 .item.on{background:#f0fdf4}
 .item.on .iname{font-weight:600;color:#14532d}
 .iname{flex:1;font-size:12.5px}
+.item{flex-wrap:wrap}
+.brandwrap{display:flex;align-items:center;gap:4px;margin-left:4px}
+.brandsel{max-width:170px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:#fff;color:#1a1a2e;cursor:pointer}
+.brandsel:focus{outline:none;border-color:var(--blue2)}
+.refbtn{width:22px;height:22px;min-width:22px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:11px;color:var(--blue2);display:flex;align-items:center;justify-content:center;padding:0}
+.refbtn:hover{background:var(--accent)}
+.refbtn.hasrefs{border-color:var(--blue2);background:var(--accent)}
+/* modal referências */
+.modal-bg{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal-bg.on{display:flex}
+.modal{background:#fff;border-radius:10px;padding:18px 18px 16px;width:min(500px,96vw);max-height:88vh;overflow:auto;box-shadow:0 12px 44px #0006}
+.modal h3{font-size:15px;color:var(--blue);margin-bottom:2px}
+.modal .msub{font-size:11px;color:var(--grey);margin-bottom:14px}
+.refrow{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.refrow input{padding:6px 8px;border:1px solid var(--border);border-radius:5px;font-size:12px}
+.refrow .rm{flex:1;min-width:80px}
+.refrow .rr{flex:1.4;min-width:100px}
+.refrow .del{width:30px;min-width:30px;height:30px;border:1px solid #fca5a5;background:#fee2e2;color:var(--red);border-radius:5px;cursor:pointer;font-size:13px}
+.refrow .del:hover{background:#fecaca}
+.addref{margin-top:2px;padding:6px 10px;border:1px dashed var(--blue2);background:var(--accent);color:var(--blue2);border-radius:5px;cursor:pointer;font-size:11.5px;font-weight:600}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.modal-actions button{padding:7px 15px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:#fff;font-weight:500}
+.modal-actions .save{background:var(--blue);color:#fff;border-color:var(--blue)}
+.modal-actions .save:hover{background:var(--blue2)}
+html.dark .modal{background:#1e293b;color:#e2e8f0}
+html.dark .modal h3{color:#93c5fd}
+html.dark .brandsel,html.dark .refrow input{background:#0f172a;color:#e2e8f0;border-color:#334155}
+html.dark .refbtn{background:#0f172a;color:#93c5fd;border-color:#334155}
+html.dark .modal-actions button{background:#0f172a;color:#e2e8f0;border-color:#334155}
 .itag{font-size:10px;background:#f0f0f0;border-radius:3px;padding:1px 5px;color:#555;white-space:nowrap}
 .qwrap{display:flex;align-items:center;gap:5px}
 .qbtn{width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-size:14px;font-weight:600;color:var(--blue2);display:flex;align-items:center;justify-content:center}
@@ -937,6 +966,83 @@ const SYS_LIST=[
 ];
 const SC={};SYS_LIST.forEach(s=>{SC[s.id]={ins:0,ext:0};});
 
+// ── Camada de Marcas + Referências ─────────────────────────────────────────────
+const REF_KEY='equipRefs';
+const ALL_EQ=[...EQ_SADI,...EQ_SAIE,...EQ_EXT,...EQ_DESFUM,...EQ_GAS,...EQ_CO,...EQ_AJAX,...EQ_RIA];
+function findEq(id){return ALL_EQ.find(e=>e.id===id);}
+function loadAllRefs(){try{return JSON.parse(localStorage.getItem(REF_KEY))||{};}catch(e){return {};}}
+function getRefs(id){return loadAllRefs()[id]||[];}
+function saveRefs(id,arr){const all=loadAllRefs();if(arr&&arr.length)all[id]=arr;else delete all[id];localStorage.setItem(REF_KEY,JSON.stringify(all));}
+// Exemplo semente (só na 1ª utilização) para veres a mecânica na secção SADI — podes editar/apagar
+(function seedExample(){
+  const all=loadAllRefs();
+  if(Object.keys(all).length===0){
+    all['det-fumo']=[{m:'Bosch',r:'FAP-425-O-R'},{m:'Hochiki',r:'ALG-EN'}];
+    localStorage.setItem(REF_KEY,JSON.stringify(all));
+  }
+})();
+function fillBrandSel(id){
+  const sel=document.getElementById('bs-'+id);const btn=document.getElementById('rb-'+id);
+  if(!sel)return;
+  const refs=getRefs(id);const cur=sel.value;
+  sel.innerHTML='<option value="">— marca —</option>'+
+    refs.map((r,i)=>`<option value="${i}">${(r.m||'?')}${r.r?' · '+r.r:''}</option>`).join('');
+  if(cur!==''&&refs[cur])sel.value=cur;
+  sel.style.display=refs.length?'':'none';
+  if(btn)btn.classList.toggle('hasrefs',refs.length>0);
+}
+function refSuffix(id){
+  const sel=document.getElementById('bs-'+id);
+  if(!sel||sel.value==='')return '';
+  const rf=getRefs(id)[sel.value];
+  if(!rf)return '';
+  return `  —  ${rf.m}${rf.r?' · ref '+rf.r:''}`;
+}
+// Modal
+let curRefItem=null;
+function ensureRefModal(){
+  if(document.getElementById('refModal'))return;
+  const bg=document.createElement('div');
+  bg.className='modal-bg';bg.id='refModal';
+  bg.onclick=e=>{if(e.target===bg)closeRefModal();};
+  bg.innerHTML=`<div class="modal">
+    <h3 id="refModalTitle">Referências</h3>
+    <div class="msub">Marcas e referências de produto para este equipamento. Aparecem na lista/email para quem faz o orçamento.</div>
+    <div id="refRows"></div>
+    <button class="addref" onclick="addRefRow()">+ Adicionar marca</button>
+    <div class="modal-actions">
+      <button onclick="closeRefModal()">Cancelar</button>
+      <button class="save" onclick="saveRefModal()">Guardar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+}
+function refRowHtml(r){
+  const esc=s=>(s||'').replace(/"/g,'&quot;');
+  return `<div class="refrow">
+    <input class="rm" placeholder="Marca" value="${esc(r.m)}">
+    <input class="rr" placeholder="Referência" value="${esc(r.r)}">
+    <button class="del" onclick="this.closest('.refrow').remove()" title="Remover">✕</button>
+  </div>`;
+}
+function addRefRow(){document.getElementById('refRows').insertAdjacentHTML('beforeend',refRowHtml({}));}
+function openRefModal(id){
+  ensureRefModal();curRefItem=id;
+  const it=findEq(id);
+  document.getElementById('refModalTitle').textContent=it?it.name:id;
+  const refs=getRefs(id);
+  document.getElementById('refRows').innerHTML=(refs.length?refs:[{}]).map(refRowHtml).join('');
+  document.getElementById('refModal').classList.add('on');
+}
+function saveRefModal(){
+  const rows=[...document.querySelectorAll('#refRows .refrow')].map(row=>{
+    const ins=row.querySelectorAll('input');
+    return {m:ins[0].value.trim(),r:ins[1].value.trim()};
+  }).filter(x=>x.m||x.r);
+  saveRefs(curRefItem,rows);fillBrandSel(curRefItem);closeRefModal();
+}
+function closeRefModal(){const m=document.getElementById('refModal');if(m)m.classList.remove('on');curRefItem=null;}
+
 // ── Build UI ──────────────────────────────────────────────────────────────────
 function buildEq(cid,items){
   const ct=document.getElementById(cid);
@@ -954,8 +1060,13 @@ function buildEq(cid,items){
       <div class="qwrap"><button class="qbtn" onclick="adj('${it.id}',-1)">−</button>
       <input class="qinp" id="q-${it.id}" type="number" value="0" min="0" step="1" oninput="sync('${it.id}')">
       <button class="qbtn" onclick="adj('${it.id}',1)">+</button></div>
-      ${hiField}<div class="ival" id="v-${it.id}">—</div>`;
+      ${hiField}<div class="ival" id="v-${it.id}">—</div>
+      <div class="brandwrap" id="bw-${it.id}">
+        <select class="brandsel" id="bs-${it.id}" title="Marca / referência a orçamentar" style="display:none"></select>
+        <button class="refbtn" id="rb-${it.id}" onclick="openRefModal('${it.id}')" title="Gerir marcas e referências">✎</button>
+      </div>`;
     ct.appendChild(d);
+    fillBrandSel(it.id);
   });
 }
 function buildLine(cid,items){
@@ -1413,7 +1524,7 @@ function genEmail(){
     // Equipment list
     sys.eqs().forEach(it=>{
       const q=parseInt(document.getElementById('q-'+it.id)?.value)||0;
-      if(q>0)secLines.push(`${pad(q)} ${it.unitEmail?it.unitEmail+' ':''}${it.email}`);
+      if(q>0)secLines.push(`${pad(q)} ${it.unitEmail?it.unitEmail+' ':''}${it.email}${refSuffix(it.id)}`);
     });
 
     // Central (SADI)
